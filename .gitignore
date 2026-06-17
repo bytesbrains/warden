@@ -2,3 +2,6 @@
 
 # warden-dealer default output — SECRET share material; never commit a federation.
 /fed/
+
+# Veil e2e harness scratch (envelopes, recovered payloads, state).
+/e2e/store/

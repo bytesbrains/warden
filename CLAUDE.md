@@ -16,10 +16,11 @@ Scoped context for the Warden workspace — the **Veil** conditional-decryption 
 | `node/` | `warden-node` crate (`wardend`, WS-C) — the node daemon: condition-watcher + `POST /partial` threshold release. Reads Base Sepolia at the `finalized` tag (`tiny_http` + `ureq`). The security-critical evaluator is `node/src/eval.rs`. |
 | `cli/` | `warden-cli` crate (`warden`, WS-D) — the client: `keygen` / `encrypt` (double-wrap → CID store) / `decrypt` (poll federation → combine → open, retry-until-released). |
 | `Dockerfile`, `docker-compose.yml` | Build `wardend` + bring up a 3-node PoC federation. |
+| `e2e/` | Veil end-to-end harness (WS-E) — Node/ethers v6 orchestrator that drives the live Base Sepolia loop (create → seal → assert sealed → execute → assert decryptable → deactivate → assert never). Not Rust; run from the repo root. Finality/reorg notes in [`e2e/README.md`](e2e/README.md). |
 | `docs/` | The authoritative specs — start at [`docs/00-overview.md`](docs/00-overview.md). |
-| `README.md`, `core/README.md`, `node/README.md`, `cli/README.md` | Workspace + crate intros. |
+| `README.md`, `core/README.md`, `node/README.md`, `cli/README.md`, `e2e/README.md` | Workspace + crate + harness intros. |
 
-The end-to-end harness (WS-E) lands here as a further member.
+All five Phase-0 workstreams (WS-A…WS-E, #181) are now in the tree.
 
 **Transitive-dep pins (node + cli):** `idna_adapter = "=1.1.0"` (via `ureq → url → idna`) — 1.2 requires edition2024 / Rust 1.85. Same discipline as `core/Cargo.toml`; don't unpin without checking the toolchain.
 
