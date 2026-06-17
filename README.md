@@ -8,7 +8,7 @@ It is the network that powers **Veil** — Maktub's time-bound, revocable, end-t
 
 ## Status
 
-**Pre-alpha / private development.** Specs first, then a PoC, then a public testnet, then open-source + audit, then a mainnet federation. See [`docs/07-roadmap.md`](docs/07-roadmap.md). **Not yet built; do not use for real secrets.**
+**Phase 0 PoC — code-complete** (Maktub [#181](https://github.com/nandal/maktub/issues/181)): the crypto core, double-wrap envelope, trusted-dealer CLI, node + condition-watcher, client CLI, and an end-to-end Base Sepolia harness are all built and merged. The crypto loop is proven offline (`cli/tests/cli_flow.rs`); the live-chain demonstration is operator-run (needs a funded staked-executor key + the ≥1h Beat expiry). Next: public testnet, then open-source + audit, then a mainnet federation. See [`docs/07-roadmap.md`](docs/07-roadmap.md). **All-ours testnet = zero security by design; do not use for real secrets.**
 
 ## What it is / is not
 

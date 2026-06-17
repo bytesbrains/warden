@@ -1,6 +1,6 @@
 # warden/ — Conditional-Decryption Network (Rust)
 
-Scoped context for the Warden workspace — the **Veil** conditional-decryption network (time-bound encrypted delivery). Read alongside the root [`../CLAUDE.md`](../CLAUDE.md). This is early-phase: foundational specs + a crypto core, not yet wired into the live protocol.
+Scoped context for the Warden workspace — the **Veil** conditional-decryption network (time-bound encrypted delivery). Read alongside the root [`../CLAUDE.md`](../CLAUDE.md). The **Phase 0 PoC (#181) is code-complete**: foundational specs plus a full workspace (`core`, `dealer`, `node`, `cli`) and a live-chain `e2e/` harness. The crypto loop is proven offline; not yet wired into the live mobile/web product, and the live Base Sepolia run is operator-driven.
 
 ## Toolchain
 

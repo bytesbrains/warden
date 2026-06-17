@@ -5,13 +5,14 @@ Build private through testnet, **open-source before partners/mainnet** (openness
 ## Phase 0.5 — Architecture spike — ✅ DONE → [08-architecture-decision](08-architecture-decision.md)
 **Outcome:** **Gen-1 = DKG threshold-IBE (tlock-derived)** — the only audited, production-mature option; the challengers (silent-setup, SWE) are GGM/iO/trusted-CRS + unaudited PoC, unsafe for seed-phrase secrets today. **Condition-gating is app-layer in all three**, so the choice was made on maturity + longevity. Roadmap: SWE = gen-2 (longevity-optimal), traitor-tracing = a layer to close W1 when production-ready, witness-encryption = gen-3 — all via the `alg` envelope. **Re-run this spike semi-annually.**
 
-## Phase 0 — PoC (weeks)
-**Goal:** prove the whole loop end-to-end, locally. (Uses the architecture chosen in 0.5 — if silent setup wins, there is **no DKG** to build; if DKG-federation is retained, use trusted-dealer shares for the PoC.)
-- Rust core: BF-IBE encrypt/decrypt + threshold-BLS partial/combine (reuse `tlock-rs` / `ideal-lab5/timelock` / `blsful`).
-- **Trusted-dealer** key setup (skip DKG); 3–5 nodes via `docker-compose`.
-- Condition evaluator: read `MaktubCore.executed(beatId)` on **Base Sepolia** (already deployed).
-- CLI client: double-wrap encrypt → create+execute a Beat → fetch partials → combine → decrypt.
-- **Exit:** a sealed payload is unreadable before `executed`, readable after, on real Sepolia state.
+## Phase 0 — PoC — ✅ CODE-COMPLETE (#181)
+**Goal:** prove the whole loop end-to-end, locally, on the gen-1 (DKG-IBE) architecture with trusted-dealer shares. **All workstreams merged** (`warden/core`, `dealer`, `node`, `cli`, `e2e/`).
+- Rust core: BF-IBE encrypt/decrypt + threshold-BLS partial/combine + the `warden-v1` double-wrap (on `arkworks` BLS12-381). [#182, #186]
+- **Trusted-dealer** key setup (skip DKG) + federation file format; 3 nodes via `docker-compose`. [#200]
+- Condition evaluator (`wardend`): reads the Beat's `executed` flag on **Base Sepolia** at the `finalized` tag. Note: `MaktubCore` exposes no `executed(uint256)` getter — status is field 7 of `getHeartbeat(uint256)`, so the condition uses `word: 7` (see [02-condition-model](02-condition-model.md)). [#201]
+- CLI client (`warden`): double-wrap encrypt → publish CID → fetch partials → combine → decrypt, retry-until-released. [#202]
+- E2E harness (`warden/e2e/`): create+execute a Beat → assert sealed-then-readable → deactivate → assert never. [#203]
+- **Exit:** a sealed payload is unreadable before `executed`, readable after, on real Sepolia state. *Crypto loop proven offline (`cli/tests/cli_flow.rs`); the live Sepolia run is operator-driven (funded staked-executor key + ≥1h Beat expiry).*
 
 ## Phase 1 — Testnet federation (a few weeks)
 **Goal:** a faithful distributed testnet.
@@ -41,7 +42,7 @@ Build private through testnet, **open-source before partners/mainnet** (openness
 - Track **witness encryption** semi-annually as the trustless successor (swap via `alg`, no consumer change).
 
 ## Open decisions to resolve along the way
-- Fork drand (Go) for the node vs. fresh Rust core. **Current lean: Rust core** (one core → node + web + mobile). Revisit if a Rust DKG proves too risky to audit (fallback: drand-Go DKG).
-- Autonomous (watch-and-sign) vs client-requested partial release.
-- Finality depth floor for Base.
+- ~~Fork drand (Go) vs fresh Rust core~~ — **resolved (Phase 0): fresh Rust core** (`warden/core`, `arkworks` BLS12-381). One core → node + future WASM/Dart-FFI.
+- Autonomous (watch-and-sign) vs client-requested partial release — **Phase 0 ships client-requested** (`wardend` signs on `POST /partial`); autonomous is the mainnet target (revisit Phase 1, per [03-protocol](03-protocol.md) §3).
+- Finality depth floor for Base — **Phase 0 reads at the `finalized` tag** (L1-finalized; federation-wide floor). Confirm/parameterize before mainnet ([03-protocol](03-protocol.md) §5).
 - Federation incentive model (public-good/no-token vs. later staking) — current lean: **no token**.

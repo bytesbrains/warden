@@ -35,8 +35,8 @@ envelope   = { alg:"warden-v1", condition, outer, inner }  // see 04-envelope-fo
 **Idempotent + retryable.** Because the condition is monotonic and chain state is permanent, release can be requested **at any later time** and always succeeds once met. Nodes MAY cache released partials and serve them forever. → A temporarily-offline network causes **delay, not loss** (see [05-threat-model](05-threat-model.md)).
 
 ### Autonomous vs client-requested signing
-Two designs (decide at PoC):
-- **Client-requested (simplest):** nodes sign only when asked. Liveness depends partly on a requester existing. Good for testnet.
+Two designs (**Phase 0 PoC ships client-requested**; autonomous remains the mainnet target):
+- **Client-requested (simplest):** nodes sign only when asked. Liveness depends partly on a requester existing. Good for testnet. *(`wardend` implements this: `POST /partial` evaluates + signs on demand.)*
 - **Autonomous (more drand-like):** nodes watch `MaktubCore` and proactively produce/store partials when `executed` flips, so a key is ready independent of any requester. Better liveness; more work. **Target for mainnet.**
 
 ## 4. Resharing (the permanence mechanism)

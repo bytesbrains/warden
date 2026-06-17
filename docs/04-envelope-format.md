@@ -19,33 +19,37 @@ outer      = IBE(K_wrapped, H(condition))   // condition-gated  → (U,V,W)
 
 ## JSON form (canonical)
 
+The wire form **as implemented** (`warden/core/src/envelope.rs`) — blobs are hex of the
+compressed-canonical / `nonce ‖ ct` bytes:
+
 ```jsonc
 {
   "alg": "warden-v1",
-  "network": "<warden master-key id / network hash>",   // which Warden federation/master key
-  "condition": {                                          // PUBLIC; hashed into the IBE identity
+  "network": "<warden federation / master-key id>",       // bound into both AEAD layers
+  "condition": {                                           // PUBLIC; hashed into the IBE identity
     "type": "contract",
-    "chain": 8453,
+    "chain": 84532,                                        // Base Sepolia (PoC)
     "address": "0x<MaktubCore>",
-    "fn": "executed(uint256)",
+    "fn": "getHeartbeat(uint256)",                         // MaktubCore has no executed() getter…
     "args": ["<beatId>"],
+    "word": 7,                                             // …executed is return field 7 (see 02)
     "test": { "cmp": "==", "value": true },
     "meta": { "finality": 32, "tier": 1 }
   },
-  "outer": {                  // IBE(K_wrapped, H(condition)); K_wrapped = ECIES(K, recipientPub)
-    "U": "<G1/G2 point>",     // commitment  r·G
-    "V": "<bytes>",           // sigma  XOR  H2( e(P_pub, H1(identity))^r )
-    "W": "<bytes>"            // K_wrapped XOR H4(sigma)   (Fujisaki–Okamoto, CCA)
+  "outer": {                  // condition gate (hybrid IBE — see the "As implemented" note above)
+    "ibe": "<hex>",           // IBE(obk, H(condition)) — the (U,V,W) ciphertext, canonical-serialized
+    "seal": "<hex>"           // nonce ‖ AEAD_obk(K_wrapped), where K_wrapped = ECIES(K, recipientPub)
   },
-  "inner": {                  // AEAD(payload, K); recipient-only. Warden never touches this.
-    "kwrap": "ecies-secp256k1",   // scheme used for K_wrapped (carried inside outer)
-    "recipient": "<recipient pubkey / registry ref>",
-    "ct": "<AEAD ciphertext of the payload under K>"
+  "inner": {                  // content layer; recipient-only. Warden never touches this.
+    "ct": "<hex>"             // nonce ‖ AEAD_K(pad(payload))
   }
 }
 ```
 
-`identity = H("warden-cond-v1" ‖ canonical_serialize(condition))` — recomputable by any node from the public `condition`, so the envelope need not store the identity.
+No recipient metadata is stored — the recipient is implicit in who can ECIES-open `K_wrapped`.
+`identity = H("warden-cond-v1" ‖ jcs(condition))` — recomputable by any node from the public
+`condition`, so the envelope need not store the identity. (`word` is omitted from the canonical
+form when `0`, so single-value-getter conditions hash identically — see [02-condition-model](02-condition-model.md).)
 
 ## age-stanza form (drand/tlock-compatible, optional)
 
