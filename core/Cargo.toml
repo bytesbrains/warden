@@ -14,6 +14,12 @@ default = ["trusted-dealer"]
 #   cargo build --no-default-features
 trusted-dealer = []
 
+# The fixture generator needs `deal` → gate it on the feature so `--no-default-features
+# --examples` skips it cleanly instead of failing to compile.
+[[example]]
+name = "veil_fixture"
+required-features = ["trusted-dealer"]
+
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 # IMPORTANT: default features only. serde_json's Map is BTreeMap-backed (sorted keys)

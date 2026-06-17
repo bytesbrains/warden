@@ -33,10 +33,26 @@ Web Crypto (`crypto.getRandomValues` / Node webcrypto), a proper CSPRNG. It ther
 target panics at runtime (fail-closed, but a footgun). `Cargo.lock` is committed so the wasm
 artifact is reproducibly pinned (extend the workspace `cargo audit` to these deps — #191).
 
+## Cross-language test
+
+`test/fixture.json` is a deterministic Rust-generated gate-layer vector (#184) — a dealt
+federation, a sealed `warden-gate-v1` envelope, the node partials, and the combined `d_id`.
+Regenerate with `cargo run -p warden-core --example veil_fixture > warden/wasm/test/fixture.json`.
+
+`test/round_trip.cjs` validates the **wasm against that Rust fixture**: `condition_identity`
+matches the fixture + the #207 KAT; `combine` reproduces the Rust `d_id` (and tolerates a bogus
+partial); `open_gated` recovers the blob; and a wasm `seal_gated`→`open_gated` round-trip holds.
+
+```bash
+wasm-pack build --target nodejs --out-dir pkg --release   # needs current-stable Rust for the tooling
+node warden/wasm/test/round_trip.cjs                       # → ✓ warden-wasm round-trip OK
+```
+
+> Producing `pkg/` needs `wasm-pack`, whose own deps require edition2024 (Rust ≥ 1.85) — so it
+> builds with a current-stable toolchain even though the **crate itself stays pinned to 1.83**
+> (the parent `warden/` override). The crate's wasm32 compile is verified under 1.83.
+
 ## Next
 
-- Node round-trip test asserting `condition_identity` matches the Rust KAT
-  (`47fce3a1…06cdb68e` for the Veil condition) + a `seal_gated`→`combine`→`open_gated` loop
-  against a dealt federation.
-- Add `warden-gate-v1` `aad`/`pad` cross-language KATs (#184) before the SDK depends on this.
 - SDK `veilSeal`/`veilOpen` consume `pkg/`; the app wires the opt-in (preview) Beat flow.
+- Add the remaining `warden-gate-v1` `aad`/`pad` byte-level vectors to #184 if needed.
