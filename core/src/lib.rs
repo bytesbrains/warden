@@ -21,6 +21,8 @@
 pub mod condition;
 #[cfg(feature = "trusted-dealer")]
 pub mod dealer;
+pub mod ecies;
+pub mod envelope;
 pub mod ibe;
 pub mod shamir;
 

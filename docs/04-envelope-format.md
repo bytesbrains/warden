@@ -15,6 +15,8 @@ outer      = IBE(K_wrapped, H(condition))   // condition-gated  → (U,V,W)
 
 **Both gates are required.** The condition unlocks `outer` only to *reveal* `K_wrapped` (an ECIES ciphertext); only the recipient's private key turns `K_wrapped` into `K`. So even after the condition fires and the IBE key becomes public, **only the recipient can read content**, and Warden — which only ever causes `outer` to open — never sees `K` or the payload.
 
+> **As implemented** (`warden/core/src/envelope.rs`): the BF-IBE block is a fixed 32 bytes, so `outer = IBE(K_wrapped, …)` is realized as a **hybrid** — `outer.ibe = IBE(obk, H(condition))` (gates a random 32-byte `obk`) and `outer.seal = AEAD_obk(K_wrapped)` (`obk` seals the ECIES-wrapped key). Logically identical to "IBE-gate `K_wrapped`". Hardening (per security review): both AEAD layers bind `domain ‖ network ‖ H(condition)` as **associated data** (tamper-evident + domain-separated), and the payload is **bucket-padded** to hide its length. AEAD = ChaCha20-Poly1305 (`nonce ‖ ct`); ECIES = secp256k1 with **HKDF info bound to `ephPub ‖ recipientPub`** (SEC1 shared-info). No recipient metadata is stored in the envelope. All domain tags / pad buckets are provisional — frozen with cross-language vectors before mainnet (#184).
+
 ## JSON form (canonical)
 
 ```jsonc

@@ -30,7 +30,14 @@ ark-ec = "0.4"
 ark-ff = "0.4"
 ark-std = "0.4"
 ark-serialize = "0.4"
+# Envelope inner layer: secp256k1 ECIES (recipient gate) + ChaCha20-Poly1305 (content) + HKDF.
+k256 = { version = "0.13", features = ["ecdh"] }
+chacha20poly1305 = "0.10"
+hkdf = "0.12"
+rand_core = "0.6"
+
 # Pin transitive deps to versions compatible with our Rust 1.83 toolchain
 # (zeroize >=1.9 / zeroize_derive >=1.5 require edition2024 / Rust 1.85). See rust-toolchain.toml.
 zeroize = "=1.8.1"
 zeroize_derive = "=1.4.2"
+base64ct = "=1.6.0" # 1.7+ requires edition2024 / Rust 1.85 (pulled transitively via k256 → pkcs8)
