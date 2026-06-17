@@ -16,7 +16,7 @@ Scoped context for the Warden workspace — the **Veil** conditional-decryption 
 | `node/` | `warden-node` crate (`wardend`, WS-C) — the node daemon: condition-watcher + `POST /partial` threshold release. Reads Base Sepolia at the `finalized` tag (`tiny_http` + `ureq`). The security-critical evaluator is `node/src/eval.rs`. |
 | `cli/` | `warden-cli` crate (`warden`, WS-D) — the client: `keygen` / `encrypt` (double-wrap → CID store) / `decrypt` (poll federation → combine → open, retry-until-released). |
 | `Dockerfile`, `docker-compose.yml` | Build `wardend` + bring up a 3-node PoC federation. |
-| `e2e/` | Veil end-to-end harness (WS-E) — Node/ethers v6 orchestrator that drives the live Base Sepolia loop (create → seal → assert sealed → execute → assert decryptable → deactivate → assert never). Not Rust; run from the repo root. Finality/reorg notes in [`e2e/README.md`](e2e/README.md). |
+| `e2e/` | Veil end-to-end harness (WS-E) — Node/ethers v6 orchestrator. `e2e/veil-e2e.mjs` drives the live Base Sepolia loop; `e2e/local/run.mjs` drives a **local Hardhat devnet** (no funds, `evm_increaseTime` skips the timer) and is the "prove Warden works for all conditions" gate. Not Rust; run from the repo root. Finality/reorg notes in [`e2e/README.md`](e2e/README.md); local runbook in [`e2e/local/README.md`](e2e/local/README.md). |
 | `docs/` | The authoritative specs — start at [`docs/00-overview.md`](docs/00-overview.md). |
 | `README.md`, `core/README.md`, `node/README.md`, `cli/README.md`, `e2e/README.md` | Workspace + crate + harness intros. |
 

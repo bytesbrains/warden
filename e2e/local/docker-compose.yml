@@ -1,0 +1,81 @@
+# Local Veil rig — chain + dealer + 3 wardens + the real executor, all in containers.
+#   export PRIVATE_KEY=<Hardhat account-0 key>   # printed by `npx hardhat node`; never commit it
+#   docker compose -f warden/e2e/local/docker-compose.yml up --build
+# Then drive it from the host (self mode — fast; works with evm_increaseTime):
+#   FEDERATION=warden/e2e/local/_state/fed/federation.json \
+#   NODES=http://localhost:8551,http://localhost:8552,http://localhost:8553 \
+#   WARDEN_BIN=warden/target/debug/warden node warden/e2e/local/run.mjs
+# (deterministic Hardhat addresses; account 0 holds the minted MKTB.)
+name: warden-local
+
+services:
+  chain:
+    build: { context: ../../.., dockerfile: warden/e2e/local/Dockerfile.chain }
+    ports: ["127.0.0.1:8545:8545"]
+    # Healthy only once deploy.js has FULLY run — checked via MKTB minted to the deployer
+    # (the last deploy tx). Checking MaktubCore code alone is too early (mint comes after),
+    # which would let the executor start before it has MKTB to stake.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8545',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to:'0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',data:'0x70a08231000000000000000000000000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266'},'latest']})}).then(r=>r.json()).then(j=>process.exit(j.result&&BigInt(j.result)>0n?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 48
+      start_period: 20s
+
+  dealer:
+    build: { context: ../.., dockerfile: e2e/local/Dockerfile.warden }
+    image: maktub/warden-local
+    # Write to a subdir of the mount (not the mountpoint itself — --force would fail to
+    # remove a bind-mount root with "Device or resource busy").
+    command: ["warden-dealer", "--out", "/state/fed", "-n", "3", "-t", "2", "--network", "warden-local", "--force"]
+    volumes: ["./_state:/state"]
+
+  node1: &node
+    image: maktub/warden-local
+    depends_on:
+      chain: { condition: service_healthy }
+      dealer: { condition: service_completed_successfully }
+    command: ["wardend"]
+    environment:
+      WARDEN_SHARE_FILE: /state/fed/shares/node-1.json
+      WARDEN_RPC_URL: http://chain:8545
+      WARDEN_CHAIN_ID: "31337"
+      WARDEN_FINALITY_TAG: latest
+      WARDEN_LISTEN: 0.0.0.0:8080
+    volumes: ["./_state:/state:ro"]
+    ports: ["127.0.0.1:8551:8080"]
+
+  node2:
+    <<: *node
+    environment:
+      WARDEN_SHARE_FILE: /state/fed/shares/node-2.json
+      WARDEN_RPC_URL: http://chain:8545
+      WARDEN_CHAIN_ID: "31337"
+      WARDEN_FINALITY_TAG: latest
+      WARDEN_LISTEN: 0.0.0.0:8080
+    ports: ["127.0.0.1:8552:8080"]
+
+  node3:
+    <<: *node
+    environment:
+      WARDEN_SHARE_FILE: /state/fed/shares/node-3.json
+      WARDEN_RPC_URL: http://chain:8545
+      WARDEN_CHAIN_ID: "31337"
+      WARDEN_FINALITY_TAG: latest
+      WARDEN_LISTEN: 0.0.0.0:8080
+    ports: ["127.0.0.1:8553:8080"]
+
+  executor:
+    build: { context: ../../../executor, dockerfile: Dockerfile }
+    image: maktub/executor-local
+    restart: on-failure
+    depends_on:
+      chain: { condition: service_healthy }
+    environment:
+      NETWORK: localhost
+      RPC_URL: http://chain:8545
+      # Required: export PRIVATE_KEY first (the Hardhat account-0 key, printed by
+      # `npx hardhat node` — a public devnet key that holds the minted MKTB). Never committed.
+      PRIVATE_KEY: ${PRIVATE_KEY:?export PRIVATE_KEY to the Hardhat account-0 key (see e2e/local/README.md)}
+      POLL_INTERVAL_SECONDS: "5"
+      AUTO_STAKE: "true"

@@ -1,0 +1,18 @@
+# All warden binaries (wardend + warden-dealer + warden client) in one image, for the local
+# rig's dealer + node services. Build context = warden/.
+FROM rust:1.83-slim AS build
+WORKDIR /warden
+COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
+COPY core ./core
+COPY dealer ./dealer
+COPY node ./node
+COPY cli ./cli
+RUN cargo build --release -p warden-node -p warden-dealer -p warden-cli
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /warden/target/release/wardend \
+                  /warden/target/release/warden-dealer \
+                  /warden/target/release/warden /usr/local/bin/
+ENTRYPOINT []

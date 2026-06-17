@@ -1,0 +1,14 @@
+# Local Hardhat devnet + auto-deploy of contracts/v3 (Veil local test rig).
+# Build context = repo root. node:20 (full) for any node-gyp native deps.
+FROM node:20
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY hardhat.config.js ./
+COPY contracts ./contracts
+COPY scripts ./scripts
+RUN npx hardhat compile
+COPY warden/e2e/local/chain-entrypoint.sh /chain-entrypoint.sh
+RUN chmod +x /chain-entrypoint.sh
+EXPOSE 8545
+ENTRYPOINT ["/chain-entrypoint.sh"]

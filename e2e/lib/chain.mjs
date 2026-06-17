@@ -6,7 +6,7 @@ const CORE_ABI = [
   "function createHeartbeat(address[] recipients, bytes payload, uint256 interval) payable returns (uint256 id)",
   "function getHeartbeat(uint256 id) view returns (address owner, address[] recipients, bytes payload, uint256 interval, uint256 lastCheckIn, uint256 createdAt, uint256 checkInCount, bool executed, bool deactivated)",
   "function heartbeatCount() view returns (uint256)",
-  "function executeHeartbeat(uint256 id)",
+  "function execute(uint256 id)",
   "function deactivate(uint256 id)",
   "function creationFeeFor(uint256 recipientCount) view returns (uint256)",
   "function isExpiredAndActive(uint256 id) view returns (bool)",
@@ -68,9 +68,9 @@ export async function status(core, id) {
 
 export async function executeBeat(core, id) {
   if (!(await core.isExpiredAndActive(id))) {
-    throw new Error(`beat ${id} is not yet expired-and-active; executeHeartbeat would revert`);
+    throw new Error(`beat ${id} is not yet expired-and-active; execute would revert`);
   }
-  const tx = await core.executeHeartbeat(id);
+  const tx = await core.execute(id);
   await tx.wait(1);
 }
 

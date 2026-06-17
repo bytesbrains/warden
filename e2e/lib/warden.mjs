@@ -20,10 +20,15 @@ export function keygen(bin) {
   return { public: field(r.stdout, "public"), secret: field(r.stdout, "secret") };
 }
 
-export function encrypt(bin, { federation, recipient, beat, core, message, store }) {
+// Seal a payload. Either pass {beat, core} (CLI builds the Veil condition for chain 84532)
+// or {conditionFile} (an arbitrary condition JSON — needed for any other chain, e.g. local 31337).
+export function encrypt(bin, { federation, recipient, beat, core, conditionFile, message, store }) {
+  const condArgs = conditionFile
+    ? ["--condition", conditionFile]
+    : ["--beat", beat, "--core", core];
   const r = run(bin, [
     "encrypt", "--federation", federation, "--recipient", recipient,
-    "--beat", beat, "--core", core, "--message", message, "--store", store,
+    ...condArgs, "--message", message, "--store", store,
   ]);
   if (!r.ok) throw new Error(`encrypt failed: ${r.stderr}`);
   return field(r.stdout, "cid");

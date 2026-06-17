@@ -5,3 +5,7 @@
 
 # Veil e2e harness scratch (envelopes, recovered payloads, state).
 /e2e/store/
+# Local-devnet harness scratch (federation shares, store, conditions, compose state).
+/e2e/local/store/
+/e2e/local/fed/
+/e2e/local/_state/
