@@ -274,6 +274,7 @@ mod tests {
             address: "0x00".into(),
             func: "executed(uint256)".into(),
             args: vec![beat_id.into()],
+            word: 0,
             test: Test {
                 cmp: "==".into(),
                 value: json!(true),

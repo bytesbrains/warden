@@ -1,0 +1,47 @@
+# Warden PoC federation — 3 nodes (Phase 0, Maktub issue #181 WS-C).
+#
+# 1. Deal a 2-of-3 federation (writes ./fed/federation.json + ./fed/shares/node-{1,2,3}.json):
+#      cargo run -p warden-dealer -- --out fed -n 3 -t 2 --network warden-poc-local
+# 2. Point at a Base Sepolia RPC and bring the federation up:
+#      export WARDEN_RPC_URL=https://sepolia.base.org    # or your own/authenticated endpoint
+#      docker compose up --build
+#
+# Each node loads ONLY its own share (read-only mount) and reads the chain at the `finalized`
+# tag. They share one RPC here for convenience — a real federation MUST use independent,
+# diverse RPCs (see docs/06-operator-manual.md "Condition-source integrity").
+services:
+  node1:
+    build: { context: ., dockerfile: Dockerfile }
+    environment:
+      WARDEN_SHARE_FILE: /shares/node-1.json
+      WARDEN_RPC_URL: ${WARDEN_RPC_URL:?set WARDEN_RPC_URL to a Base Sepolia endpoint}
+      WARDEN_CHAIN_ID: "84532"
+      WARDEN_FINALITY_TAG: finalized
+      WARDEN_LISTEN: 0.0.0.0:8080
+    volumes:
+      - ./fed/shares:/shares:ro
+    ports: ["8531:8080"]
+
+  node2:
+    build: { context: ., dockerfile: Dockerfile }
+    environment:
+      WARDEN_SHARE_FILE: /shares/node-2.json
+      WARDEN_RPC_URL: ${WARDEN_RPC_URL:?set WARDEN_RPC_URL to a Base Sepolia endpoint}
+      WARDEN_CHAIN_ID: "84532"
+      WARDEN_FINALITY_TAG: finalized
+      WARDEN_LISTEN: 0.0.0.0:8080
+    volumes:
+      - ./fed/shares:/shares:ro
+    ports: ["8532:8080"]
+
+  node3:
+    build: { context: ., dockerfile: Dockerfile }
+    environment:
+      WARDEN_SHARE_FILE: /shares/node-3.json
+      WARDEN_RPC_URL: ${WARDEN_RPC_URL:?set WARDEN_RPC_URL to a Base Sepolia endpoint}
+      WARDEN_CHAIN_ID: "84532"
+      WARDEN_FINALITY_TAG: finalized
+      WARDEN_LISTEN: 0.0.0.0:8080
+    volumes:
+      - ./fed/shares:/shares:ro
+    ports: ["8533:8080"]

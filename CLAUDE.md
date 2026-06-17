@@ -13,10 +13,14 @@ Scoped context for the Warden workspace — the **Veil** conditional-decryption 
 |---|---|
 | `core/` | `warden-core` crate — threshold IBE crypto core, the `warden-v1` double-wrap envelope, the `fed` federation file format. Library only. |
 | `dealer/` | `warden-dealer` crate — the trusted-dealer ceremony CLI (WS-B). Materializes the master secret, Shamir-splits it, writes `federation.json` (public) + `shares/node-<i>.json` (secret, 0600). Testnet only. |
+| `node/` | `warden-node` crate (`wardend`, WS-C) — the node daemon: condition-watcher + `POST /partial` threshold release. Reads Base Sepolia at the `finalized` tag (`tiny_http` + `ureq`). The security-critical evaluator is `node/src/eval.rs`. |
+| `Dockerfile`, `docker-compose.yml` | Build `wardend` + bring up a 3-node PoC federation. |
 | `docs/` | The authoritative specs — start at [`docs/00-overview.md`](docs/00-overview.md). |
-| `README.md`, `core/README.md` | Workspace + crate intros. |
+| `README.md`, `core/README.md`, `node/README.md` | Workspace + crate intros. |
 
-The node daemon (`wardend`, WS-C) and client CLI (`warden`, WS-D) land here as further workspace members.
+The client CLI (`warden`, WS-D) and the end-to-end harness (WS-E) land here as further members.
+
+**Transitive-dep pins (node):** `idna_adapter = "=1.1.0"` (via `ureq → url → idna`) — 1.2 requires edition2024 / Rust 1.85. Same discipline as `core/Cargo.toml`; don't unpin without checking the toolchain.
 
 ## Specs (read these first)
 

@@ -1,0 +1,39 @@
+[package]
+name = "warden-node"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT"
+description = "Warden node daemon (Phase 0 PoC): condition-watcher + threshold partial release over HTTP"
+publish = false
+
+[[bin]]
+name = "wardend"
+path = "src/main.rs"
+
+[dependencies]
+# The crypto, condition model, and federation file format. No trusted-dealer needed: a node
+# only ever holds its own share, never the master secret.
+warden-core = { path = "../core", default-features = false }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hex = "0.4"
+thiserror = "1"
+# Keccak-256 for Solidity function selectors (RustCrypto; digest 0.10 already in-tree via sha2).
+sha3 = "0.10"
+# To wire-encode a released `Partial` (compressed canonical → hex), matching the envelope.
+ark-serialize = "0.4"
+# Minimal blocking HTTP server — the node's local-only control surface (no TLS).
+tiny_http = "0.12"
+# Blocking HTTPS client for JSON-RPC to the Base Sepolia endpoint (rustls + ring).
+ureq = { version = "2", features = ["json"] }
+
+# Pin transitive deps to versions compatible with the Rust 1.83 toolchain (same discipline
+# as core/Cargo.toml). idna_adapter 1.2 (pulled via ureq → url → idna) switched to ICU4X and
+# requires edition2024 / Rust 1.85; 1.1.0 uses unicode-normalization and stays on 1.83.
+idna_adapter = "=1.1.0"
+
+[dev-dependencies]
+# Build a Shamir `Share` in handler tests (the master-secret path is feature-gated off here).
+ark-bls12-381 = "0.4"
+ark-std = "0.4"

@@ -65,6 +65,17 @@ pub enum Condition {
         func: String,
         /// Arguments; uint256 values are decimal **strings**.
         args: Vec<String>,
+        /// Which 32-byte word of the ABI return to compare (0-based). `0` for a getter that
+        /// returns a single value. For a **tuple** getter it is the target field's ordinal
+        /// position — static fields sit inline in the ABI head regardless of earlier dynamic
+        /// types, so no full tuple decode is needed. Example: `MaktubCore.getHeartbeat(uint256)`
+        /// returns `(owner, recipients, payload, interval, lastCheckIn, createdAt, checkInCount,
+        /// executed, deactivated)`, so the `executed` bool is `word: 7`.
+        ///
+        /// Omitted from the canonical form when `0`, so single-value getters hash identically
+        /// to a condition written before this field existed.
+        #[serde(default, skip_serializing_if = "is_zero")]
+        word: u32,
         test: Test,
         meta: Meta,
     },
@@ -114,6 +125,11 @@ pub enum Error {
 }
 
 const VALID_CMP: [&str; 6] = ["==", "!=", ">=", "<=", ">", "<"];
+
+/// `skip_serializing_if` predicate so `word: 0` is omitted from the canonical form.
+fn is_zero(n: &u32) -> bool {
+    *n == 0
+}
 
 impl Condition {
     /// Canonical byte serialization (RFC-8785-style: sorted keys, compact).
@@ -178,6 +194,7 @@ mod tests {
             address: "0x00".into(),
             func: "executed(uint256)".into(),
             args: vec!["12345678901234567890".into()],
+            word: 0,
             test: Test {
                 cmp: "==".into(),
                 value: json!(true),
@@ -192,9 +209,38 @@ mod tests {
     #[test]
     fn canonical_is_sorted_and_compact() {
         // Keys must come out alphabetically sorted, nested objects too, no whitespace.
+        // `word: 0` is omitted, so this matches a pre-`word` single-value condition exactly.
         let got = String::from_utf8(sample_contract().canonical_bytes().unwrap()).unwrap();
         let expected = r#"{"address":"0x00","args":["12345678901234567890"],"chain":8453,"fn":"executed(uint256)","meta":{"finality":32,"tier":1},"test":{"cmp":"==","value":true},"type":"contract"}"#;
         assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn nonzero_word_appears_in_canonical_and_changes_identity() {
+        let base = sample_contract();
+        let mut with_word = sample_contract();
+        if let Condition::Contract { word, .. } = &mut with_word {
+            *word = 7;
+        }
+        let canon = String::from_utf8(with_word.canonical_bytes().unwrap()).unwrap();
+        assert!(
+            canon.contains(r#""word":7"#),
+            "word must appear when non-zero: {canon}"
+        );
+        // A different return-word selector is a different condition → different identity.
+        assert_ne!(base.identity().unwrap(), with_word.identity().unwrap());
+    }
+
+    #[test]
+    fn missing_word_deserializes_to_zero() {
+        // A condition written without `word` (the documented single-value form) round-trips.
+        let json = r#"{"type":"contract","chain":8453,"address":"0x00","fn":"executed(uint256)",
+            "args":["1"],"test":{"cmp":"==","value":true},"meta":{"finality":32,"tier":1}}"#;
+        let c: Condition = serde_json::from_str(json).unwrap();
+        match c {
+            Condition::Contract { word, .. } => assert_eq!(word, 0),
+            _ => panic!("expected contract"),
+        }
     }
 
     #[test]

@@ -17,7 +17,7 @@ A node, asked for its partial on `identity`, is given the condition `C` (public 
 ## Condition schema (`cond-v1`)
 
 **Shape** — exactly one `type`; every condition carries a `meta`:
-- `contract` — `{ chain, address, fn, args, test, meta }`
+- `contract` — `{ chain, address, fn, args, word?, test, meta }`
 - `block` — `{ chain, field: "number"|"timestamp", cmp, value, meta }`
 - `event` — `{ chain, address, sig, args, meta }`
 - `all` | `any` | `not` | `threshold` — `{ of: [...sub-conditions], k (threshold only), meta }`
@@ -38,9 +38,22 @@ A node, asked for its partial on `identity`, is given the condition `C` (public 
 }
 ```
 
+The Veil release condition for a real Maktub Beat — `MaktubCore` has **no `executed(uint256)`
+getter**; execution status is the 8th field (index 7) of `getHeartbeat(uint256)`'s return
+tuple, so `word` selects it:
+
+```json
+{
+  "type": "contract", "chain": 84532, "address": "0xb603C96D089F64Ac487EE0bdaE97D49848F86133",
+  "fn": "getHeartbeat(uint256)", "args": ["123"], "word": 7,
+  "test": { "cmp": "==", "value": true }, "meta": { "finality": 32, "tier": 1 }
+}
+```
+
 **Type rules (load-bearing — the condition is hashed into the identity):**
 - `cmp ∈ { "==", "!=", ">=", "<=", ">", "<" }` (string).
 - **All `uint256` args/values are decimal *strings*** (e.g. `"12345…"`), never JSON numbers — to avoid JavaScript's `2^53−1` precision loss and guarantee byte-identical serialization across platforms.
+- `word` (contract only, optional, default `0`) — index of the 32-byte ABI return word to compare. `0` for a single-value getter; for a tuple getter, the target field's ordinal position (static fields sit inline in the ABI head regardless of earlier dynamic types). **Omitted from the canonical form when `0`**, so single-value conditions hash identically to the pre-`word` schema.
 - Serialization is **RFC 8785 (JCS)**: sorted keys, no insignificant whitespace, fixed number/string formatting. A type mismatch (number vs string) yields a *different* `identity` and **silently breaks decryption**.
 
 ## The three non-negotiable constraints

@@ -23,6 +23,8 @@ A Cargo workspace (`Cargo.toml`) plus the specs. Toolchain pinned to Rust 1.83 (
 |---|---|
 | `core/` | `warden-core` crate — condition model, threshold IBE, the `warden-v1` double-wrap envelope, federation file format |
 | `dealer/` | `warden-dealer` crate — trusted-dealer ceremony CLI (testnet only; real DKG for mainnet) |
+| `node/` | `warden-node` crate (`wardend`) — node daemon: condition-watcher + threshold partial release over HTTP |
+| `Dockerfile`, `docker-compose.yml` | Build `wardend`; bring up a 3-node PoC federation |
 | `docs/00-overview.md` | What Warden is, goals, non-goals |
 | `docs/01-architecture.md` | System architecture; drand reuse/replace |
 | `docs/02-condition-model.md` | The general condition spec (identity = `H(condition)`) |

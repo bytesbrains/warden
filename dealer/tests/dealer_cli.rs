@@ -32,6 +32,7 @@ fn beat(beat_id: &str) -> Condition {
         address: "0x000000000000000000000000000000000000dead".into(),
         func: "executed(uint256)".into(),
         args: vec![beat_id.into()],
+        word: 0,
         test: Test {
             cmp: "==".into(),
             value: json!(true),
