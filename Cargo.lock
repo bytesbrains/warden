@@ -1064,6 +1064,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 
 [[package]]
+name = "warden-cli"
+version = "0.0.0"
+dependencies = [
+ "ark-serialize",
+ "ark-std",
+ "hex",
+ "idna_adapter",
+ "rand",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror",
+ "tiny_http",
+ "ureq",
+ "warden-core",
+]
+
+[[package]]
 name = "warden-core"
 version = "0.0.0"
 dependencies = [
