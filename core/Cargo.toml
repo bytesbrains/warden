@@ -1,0 +1,36 @@
+[package]
+name = "warden-core"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT"
+description = "Warden core (Phase 0 PoC): condition model, threshold IBE, double-wrap envelope"
+publish = false
+
+[features]
+default = ["trusted-dealer"]
+# The trusted-dealer / master-secret path (`MasterKey`, `dealer`) is testnet-only scaffolding —
+# it materializes the full master secret. Production (real DKG) builds disable it:
+#   cargo build --no-default-features
+trusted-dealer = []
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+# IMPORTANT: default features only. serde_json's Map is BTreeMap-backed (sorted keys)
+# unless `preserve_order` is enabled — we rely on sorted keys for RFC-8785-style canonicalization.
+# (The `condition::canonical_is_sorted_and_compact` test fails loudly if `preserve_order` leaks in.)
+serde_json = "1"
+sha2 = "0.10"
+hex = "0.4"
+thiserror = "1"
+
+# BLS12-381 + pairings for threshold BLS / Boneh–Franklin IBE (tlock-style).
+ark-bls12-381 = "0.4"
+ark-ec = "0.4"
+ark-ff = "0.4"
+ark-std = "0.4"
+ark-serialize = "0.4"
+# Pin transitive deps to versions compatible with our Rust 1.83 toolchain
+# (zeroize >=1.9 / zeroize_derive >=1.5 require edition2024 / Rust 1.85). See rust-toolchain.toml.
+zeroize = "=1.8.1"
+zeroize_derive = "=1.4.2"
