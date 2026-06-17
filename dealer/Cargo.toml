@@ -1,0 +1,20 @@
+[package]
+name = "warden-dealer"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT"
+description = "Warden trusted-dealer ceremony CLI (Phase 0 PoC; testnet only — real DKG replaces it for mainnet)"
+publish = false
+
+[[bin]]
+name = "warden-dealer"
+path = "src/main.rs"
+
+[dependencies]
+# The crypto + federation file format live in core. `trusted-dealer` (default) gives us `deal`.
+warden-core = { path = "../core" }
+serde_json = "1"
+# OsRng for the ceremony CSPRNG. rand 0.8 matches the version ark-std re-exports, so the
+# `Rng + CryptoRng` bounds on `deal` are satisfied by the same traits.
+rand = "0.8"

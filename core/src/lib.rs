@@ -11,8 +11,9 @@
 //!   partial-decryption, partial **verification**, and combine.
 //! - [`dealer`] — trusted-dealer setup (**`trusted-dealer` feature**, testnet only;
 //!   real DKG replaces it for mainnet).
-//!
-//! Forthcoming (same PoC): `envelope` (the `warden-v1` double-wrap).
+//! - [`envelope`] — the `warden-v1` double-wrap (condition gate + recipient gate).
+//! - [`fed`] — the federation file format (public master key + share pubkeys; per-node
+//!   secret share files) that the dealer emits and nodes/clients load.
 //!
 //! ⚠️ **Not audited. Not for production.** All-ours testnet = zero security by design.
 
@@ -23,6 +24,7 @@ pub mod condition;
 pub mod dealer;
 pub mod ecies;
 pub mod envelope;
+pub mod fed;
 pub mod ibe;
 pub mod shamir;
 

@@ -1,0 +1,15 @@
+# Warden workspace (Phase 0 PoC, Maktub issue #181).
+#
+# Members:
+#   core   — `warden-core`: condition model, threshold IBE, the warden-v1 double-wrap.
+#   dealer — `warden-dealer`: trusted-dealer ceremony CLI (testnet only; real DKG replaces
+#            it for mainnet). Emits the master public key + per-node share files.
+#
+# The node daemon (`wardend`, WS-C) and client CLI (`warden`, WS-D) slot in here next.
+#
+# Toolchain pinned to 1.83 (`rust-toolchain.toml`); transitive deps are pinned in
+# `core/Cargo.toml` to versions compatible with that channel — see the comments there
+# before bumping anything.
+[workspace]
+resolver = "2"
+members = ["core", "dealer"]

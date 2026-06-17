@@ -4,16 +4,19 @@ Scoped context for the Warden workspace — the **Veil** conditional-decryption 
 
 ## Toolchain
 
-- Rust, pinned to channel **1.83.0** (`core/rust-toolchain.toml`, components `rustfmt` + `clippy`). Edition 2021.
-- Crate `warden-core` (`core/Cargo.toml`, v0.0.0). Uses `k256` (ECDH) + `serde`. **Transitive deps are deliberately pinned** to versions compatible with Rust 1.83 (e.g. `base64ct =1.6.0`, `zeroize <1.9`) — newer versions require edition2024 / Rust 1.85. Don't bump the toolchain or unpin without checking those constraints.
+- Rust, pinned to channel **1.83.0** (`rust-toolchain.toml` at the workspace root, components `rustfmt` + `clippy`). Edition 2021.
+- A Cargo **workspace** (`Cargo.toml`, `resolver = "2"`) with one `Cargo.lock` at the root. **Transitive deps are deliberately pinned** in `core/Cargo.toml` to versions compatible with Rust 1.83 (e.g. `base64ct =1.6.0`, `zeroize <1.9`) — newer versions require edition2024 / Rust 1.85. Don't bump the toolchain or unpin without checking those constraints. New member crates must stay within the same channel.
 
 ## Layout
 
 | Path | Contents |
 |---|---|
-| `core/` | `warden-core` crate — threshold IBE crypto core, the warden-v1 double-wrap envelope. |
+| `core/` | `warden-core` crate — threshold IBE crypto core, the `warden-v1` double-wrap envelope, the `fed` federation file format. Library only. |
+| `dealer/` | `warden-dealer` crate — the trusted-dealer ceremony CLI (WS-B). Materializes the master secret, Shamir-splits it, writes `federation.json` (public) + `shares/node-<i>.json` (secret, 0600). Testnet only. |
 | `docs/` | The authoritative specs — start at [`docs/00-overview.md`](docs/00-overview.md). |
 | `README.md`, `core/README.md` | Workspace + crate intros. |
+
+The node daemon (`wardend`, WS-C) and client CLI (`warden`, WS-D) land here as further workspace members.
 
 ## Specs (read these first)
 
@@ -24,8 +27,10 @@ Scoped context for the Warden workspace — the **Veil** conditional-decryption 
 - Veil is the long-horizon "time-bound encrypted delivery IS the product" direction — see the foundational specs and DECISION_LOG. It does **not** add governance/upgradeability to the protocol layer; the root immutability invariants still hold.
 - Keep `rust-toolchain.toml` and the pinned transitive deps in sync — see the comments in `core/Cargo.toml`.
 
-## Commands (`cd warden/core`)
+## Commands (`cd warden`)
 
-- `cargo build` — build the crate.
-- `cargo test` — run tests.
-- `cargo fmt` / `cargo clippy` — format / lint.
+- `cargo build` / `cargo test` — build / test the whole workspace.
+- `cargo test -p warden-core` / `-p warden-dealer` — a single crate.
+- `cargo clippy --all-targets -- -D warnings` / `cargo fmt --check` — lint / format gate.
+- `cargo build --no-default-features` (in `core/`) — production build (no master-secret / dealer path).
+- `cargo run -p warden-dealer -- --help` — the dealer CLI.

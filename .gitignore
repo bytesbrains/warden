@@ -1,0 +1,4 @@
+/target
+
+# warden-dealer default output — SECRET share material; never commit a federation.
+/fed/

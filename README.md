@@ -17,8 +17,12 @@ It is the network that powers **Veil** — Maktub's time-bound, revocable, end-t
 
 ## Repository layout
 
+A Cargo workspace (`Cargo.toml`) plus the specs. Toolchain pinned to Rust 1.83 (`rust-toolchain.toml`).
+
 | Path | Purpose |
 |---|---|
+| `core/` | `warden-core` crate — condition model, threshold IBE, the `warden-v1` double-wrap envelope, federation file format |
+| `dealer/` | `warden-dealer` crate — trusted-dealer ceremony CLI (testnet only; real DKG for mainnet) |
 | `docs/00-overview.md` | What Warden is, goals, non-goals |
 | `docs/01-architecture.md` | System architecture; drand reuse/replace |
 | `docs/02-condition-model.md` | The general condition spec (identity = `H(condition)`) |

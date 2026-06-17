@@ -14,6 +14,7 @@ Core cryptography for **Warden** — the event-gated threshold conditional-decry
 | `dealer` | Trusted-dealer setup — **`trusted-dealer` feature** (default), testnet only; emits per-node share public keys. Replaced by real DKG for mainnet. |
 | `ecies` | **secp256k1 ECIES** (recipient gate): ECDH + HKDF-SHA256 + ChaCha20-Poly1305. |
 | `envelope` | The **`warden-v1` double-wrap** (`seal`/`open`): AEAD content + ECIES recipient gate + threshold-IBE condition gate, JSON wire form. |
+| `fed` | The **federation file format** — `FederationPublic` (master pubkey + share pubkeys; published to clients) and `NodeShareFile` (a node's secret share). Crypto carried as hex-of-canonical; readable without `trusted-dealer`. Written by `warden-dealer`. |
 
 ## Features
 
@@ -33,15 +34,15 @@ A key released for a *different* condition cannot open the ciphertext (identity 
 ## Build / test
 
 ```bash
-cargo test                              # 32 tests (incl. partial verification, ECIES KDF binding, AAD tamper, padding, full double-wrap)
+cargo test                              # core lib + fed round-trip + double-wrap e2e (incl. partial verification, ECIES KDF binding, AAD tamper, padding)
 cargo clippy --all-targets -- -D warnings
 cargo build --no-default-features       # production build (no master secret) — warning-clean
 ```
 
-Toolchain pinned by `rust-toolchain.toml` to **1.83** (transitive `zeroize`/`zeroize_derive` pinned to pre-edition2024 versions); `Cargo.lock` is committed; CI runs fmt/clippy/test (`.github/workflows/ci.yml` → `warden-core`).
+`warden-core` is a member of the `warden/` workspace; the toolchain pin (`rust-toolchain.toml`, **1.83**) and the committed `Cargo.lock` live at the workspace root. Transitive `zeroize`/`zeroize_derive`/`base64ct` are pinned to pre-edition2024 versions. CI runs fmt/clippy/test (`.github/workflows/ci.yml` → `warden-core`).
 
 ## Not yet (later WS / phases / tracked from review)
 
-- The node daemon + Base condition-watcher (WS-C), WASM/Dart-FFI client targets.
+- The node daemon + Base condition-watcher (WS-C) and client CLI (WS-D) — both consume `fed` files; WASM/Dart-FFI client targets later.
 - Reconcile `ecies` byte format with Maktub's existing `RecipientRegistry` ECIES before integration.
 - **Before mainnet:** real DKG + resharing; **subgroup/point validation at the wire boundary** (deserialize already validates via arkworks `Validate::Yes`, but the node must reject malformed partials/ciphertext); **true secret zeroization** (current `Drop` is best-effort); freeze domain-separation tags + hash-to-curve DST with **cross-language test vectors**; external audit.
