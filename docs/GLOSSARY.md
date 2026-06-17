@@ -1,0 +1,22 @@
+# Glossary
+
+- **Warden** — the event-gated threshold conditional-decryption network (this project).
+- **Veil** — Maktub's capability that Warden powers: time-bound, revocable, end-to-end-sealed delivery.
+- **DKG (Distributed Key Generation)** — protocol where `n` parties jointly create a keypair: everyone agrees on one **master public key**, each holds a **share** of the private key, and the full private key is **never assembled**. (Pedersen/Feldman VSS.)
+- **Trusted-dealer setup** — testnet shortcut: one script makes the master key and Shamir-splits it into shares. The full key briefly exists in the dealer. Not for mainnet.
+- **Threshold BLS** — BLS signatures over BLS12-381 split `t`-of-`n`: any `t` partial signatures combine (Lagrange) into the full signature; fewer learn nothing. The release primitive.
+- **Master key / master public key (`msk` / `P_pub`)** — the federation's shared key. The public key is what ciphertexts encrypt to; it stays **constant across resharing** (permanence).
+- **Share (`sk_i`)** — one node's piece of the master private key.
+- **Resharing** — re-splits the *same* master secret to a new operator set, keeping the **master public key unchanged**. Gives permanence-with-churn.
+- **IBE (Identity-Based Encryption)** — encrypt to an arbitrary **identity** string using only a master public key; the matching decryption key is produced later by the key-holder. Warden uses **Boneh–Franklin IBE** (same as drand's tlock).
+- **Identity** — the string a payload is encrypted to. drand/tlock: a round number. Warden: **`H(condition)`**.
+- **Partial (decryption key) `sig_i`** — `sk_i · H1(identity)`; a node's contribution, released only when the condition holds. Publicly verifiable.
+- **Condition** — a canonical, public, deterministic predicate over on-chain state (e.g. `executed(beatId)==true`) whose hash is the IBE identity. See [02-condition-model](02-condition-model.md).
+- **Monotonic / latching condition** — once true, stays true (e.g. `executed`). Required (or anchored) for deterministic, permanent release.
+- **Finality policy** — how many confirmations a node waits before treating a condition as final. Guards against reorg-after-release leaks.
+- **Double-wrap** — `outer` = Warden-IBE (gated on the condition) over the `inner` = ECIES-to-recipient ciphertext. Keeps content out of the federation's reach.
+- **tlock** — drand's timelock encryption (BF-IBE over threshold BLS, identity = future round). Warden's direct ancestor; swap *round* for *H(condition)*.
+- **Unchained beacon** — drand mode where the signed message depends only on the round (predictable), required for tlock. Warden's `H(condition)` is predictable in the same way.
+- **age stanza** — the hybrid-encryption envelope format tlock uses; Warden can express `outer` as a `-> warden …` stanza.
+- **Witness encryption (WE)** — the trustless ideal: the on-chain proof *is* the decryption key, no federation. Not deployable today; Warden's intended successor via the `alg` field.
+- **Honest-majority** — the assumption that fewer than the threshold of operators collude; Warden's timing/revocation security rests on it (content does not).
