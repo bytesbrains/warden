@@ -36,9 +36,14 @@ use crate::ecies::{self, PublicKey, SecretKey};
 use crate::ibe::{self, MasterPublicKey};
 
 const ALG: &str = "warden-v1";
+/// `warden-gate-v1` — the condition-gate-only envelope (no recipient layer; the host app
+/// owns recipient confidentiality). Used when wrapping an *already-encrypted* blob, e.g.
+/// Maktub's v2 hybrid envelope. See [`seal_gated`].
+const ALG_GATE: &str = "warden-gate-v1";
 const NONCE_LEN: usize = 12;
 const AAD_OUTER: &[u8] = b"warden-v1-aad-O"; // domain tag for the condition-gated layer
 const AAD_INNER: &[u8] = b"warden-v1-aad-I"; // domain tag for the content layer
+const AAD_GATE: &[u8] = b"warden-gate-v1-aad"; // domain tag for the gate-only layer
 /// Length-hiding buckets (bytes). Payloads (+4-byte length prefix) pad up to one of these,
 /// or to a multiple of the largest. Provisional — freeze with vectors before mainnet (#184).
 const PAD_BUCKETS: [usize; 6] = [64, 256, 1024, 4096, 16384, 65536];
@@ -72,6 +77,25 @@ pub struct Inner {
     pub ct: String,
 }
 
+/// The `warden-gate-v1` ciphertext — the **condition gate only**, wrapping an opaque blob.
+///
+/// Veil-for-a-host-app: the app encrypts content to its recipients with its own scheme
+/// (e.g. Maktub's v2 hybrid envelope), then gates that blob on the release condition here.
+/// Warden contributes **timing**; the host app keeps **recipient confidentiality**. After
+/// release, `open_gated` returns the original blob byte-for-byte for the app to decrypt.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct GatedEnvelope {
+    pub alg: String,
+    /// Which Warden federation / master key this is sealed to (bound into the AEAD).
+    pub network: String,
+    /// Public release condition (hashed into the IBE identity and the AEAD associated data).
+    pub condition: Condition,
+    /// Hex of the canonical-serialized IBE ciphertext of `obk`.
+    pub ibe: String,
+    /// Hex of `nonce ‖ AEAD_obk(pad(blob))`.
+    pub seal: String,
+}
+
 /// Errors from sealing / opening an envelope.
 #[derive(thiserror::Error, Debug)]
 pub enum EnvelopeError {
@@ -94,6 +118,12 @@ pub enum EnvelopeError {
 }
 
 /// Associated data binding a layer to its `domain`, the `network`, and the condition identity.
+///
+/// `domain` is intentionally **not** length-prefixed: it is always a hardcoded per-layer
+/// constant (`AAD_OUTER` / `AAD_INNER` / `AAD_GATE`), the three are mutually non-prefixing,
+/// and `open*` recomputes the AAD with that same constant — so it is never attacker-controlled
+/// and there is no parsing ambiguity. **If a future caller ever passes a dynamic/caller-supplied
+/// `domain`, length-prefix it** (as `network` is below) before relying on this.
 fn aad(domain: &[u8], network: &str, identity: &[u8; 32]) -> Vec<u8> {
     let net = network.as_bytes();
     let mut a = Vec::with_capacity(domain.len() + 4 + net.len() + 32);
@@ -259,6 +289,55 @@ pub fn open(
     unpad(&padded)
 }
 
+/// Gate an **already-encrypted** `blob` on `condition` — the condition layer only, no
+/// recipient ECIES (the host app owns recipient confidentiality). `rng` must be a CSPRNG.
+///
+/// `obk = rand; ibe = IBE(obk, H(condition)); seal = AEAD_obk(pad(blob), aad=domain‖network‖id)`.
+/// The blob is bucket-padded for length-hiding and the metadata is AEAD-bound, exactly like
+/// the double-wrap's layers.
+///
+/// Intended for blobs ≤ the host app's payload cap (Maktub's hybrid envelope is ≤ ~4 KB), which
+/// land in the small pad buckets; larger blobs still work but pad up to 64 KB multiples.
+pub fn seal_gated<R: Rng + CryptoRng>(
+    condition: Condition,
+    master_pub: &MasterPublicKey,
+    network: &str,
+    blob: &[u8],
+    rng: &mut R,
+) -> Result<GatedEnvelope, EnvelopeError> {
+    let id = condition.identity()?;
+    let obk: [u8; 32] = rng.gen();
+    let ibe_ct = ibe::encrypt(master_pub, &id, &obk, rng);
+    let seal = aead_seal(&obk, &pad(blob), &aad(AAD_GATE, network, &id), rng)?;
+    Ok(GatedEnvelope {
+        alg: ALG_GATE.to_string(),
+        network: network.to_string(),
+        condition,
+        ibe: hex::encode(ser_ibe(&ibe_ct)),
+        seal: hex::encode(seal),
+    })
+}
+
+/// Open a [`GatedEnvelope`] given the released IBE key `d_id` (from `combine_verified`),
+/// returning the original blob. Fails closed if the key is for a different condition
+/// (`NotReleased`) or any bound metadata was tampered (`Aead`).
+pub fn open_gated(env: &GatedEnvelope, d_id: &G1Projective) -> Result<Vec<u8>, EnvelopeError> {
+    if env.alg != ALG_GATE {
+        return Err(EnvelopeError::BadVersion);
+    }
+    let id = env.condition.identity()?;
+    let ibe_bytes = hex::decode(&env.ibe)?;
+    let ibe_ct = ibe::Ciphertext::deserialize_compressed(ibe_bytes.as_slice())
+        .map_err(|_| EnvelopeError::Malformed)?;
+    let obk = ibe::decrypt(d_id, &ibe_ct).ok_or(EnvelopeError::NotReleased)?;
+    let padded = aead_open(
+        &obk,
+        &hex::decode(&env.seal)?,
+        &aad(AAD_GATE, &env.network, &id),
+    )?;
+    unpad(&padded)
+}
+
 #[cfg(all(test, feature = "trusted-dealer"))]
 mod tests {
     use super::*;
@@ -420,5 +499,46 @@ mod tests {
         let big = vec![7u8; 5000];
         let e3 = seal(cond, &recipient.public_key(), &fed.mpk, "t", &big, &mut rng).unwrap();
         assert_eq!(open(&e3, &d_id, &recipient).unwrap(), big);
+    }
+
+    #[test]
+    fn gated_blob_round_trips_byte_for_byte() {
+        let mut rng = StdRng::seed_from_u64(6);
+        let fed = deal(3, 5, &mut rng).unwrap();
+        let cond = beat("42");
+        // An opaque, already-encrypted blob (e.g. Maktub's v2 hybrid envelope).
+        let blob = b"\x02\x00\x01...some-host-app-ciphertext-bytes...".to_vec();
+
+        let env = seal_gated(cond.clone(), &fed.mpk, "testnet", &blob, &mut rng).unwrap();
+        assert_eq!(env.alg, "warden-gate-v1");
+
+        // JSON wire round-trip, then open after release → original blob, byte for byte.
+        let back: GatedEnvelope =
+            serde_json::from_str(&serde_json::to_string(&env).unwrap()).unwrap();
+        let d_id = release(&fed, &cond.identity().unwrap(), [0, 2, 4]);
+        assert_eq!(open_gated(&back, &d_id).unwrap(), blob);
+    }
+
+    #[test]
+    fn gated_key_for_other_condition_does_not_release() {
+        let mut rng = StdRng::seed_from_u64(7);
+        let fed = deal(3, 5, &mut rng).unwrap();
+        let env = seal_gated(beat("42"), &fed.mpk, "t", b"blob", &mut rng).unwrap();
+        let wrong = release(&fed, &beat("43").identity().unwrap(), [0, 1, 2]);
+        assert!(matches!(
+            open_gated(&env, &wrong),
+            Err(EnvelopeError::NotReleased)
+        ));
+    }
+
+    #[test]
+    fn gated_tampered_network_is_rejected_by_aad() {
+        let mut rng = StdRng::seed_from_u64(8);
+        let fed = deal(3, 5, &mut rng).unwrap();
+        let cond = beat("42");
+        let mut env = seal_gated(cond.clone(), &fed.mpk, "honest", b"blob", &mut rng).unwrap();
+        let d_id = release(&fed, &cond.identity().unwrap(), [0, 1, 2]);
+        env.network = "evil".into();
+        assert!(matches!(open_gated(&env, &d_id), Err(EnvelopeError::Aead)));
     }
 }

@@ -13,7 +13,7 @@ Core cryptography for **Warden** — the event-gated threshold conditional-decry
 | `ibe` | **Boneh–Franklin IBE over BLS12-381 (tlock-style)** with **threshold** partial-decryption, **partial verification** (`verify_partial` / `combine_verified` — attributes a bad node), Lagrange combine in G1, Fujisaki–Okamoto CCA, and `CanonicalSerialize` wire types. |
 | `dealer` | Trusted-dealer setup — **`trusted-dealer` feature** (default), testnet only; emits per-node share public keys. Replaced by real DKG for mainnet. |
 | `ecies` | **secp256k1 ECIES** (recipient gate): ECDH + HKDF-SHA256 + ChaCha20-Poly1305. |
-| `envelope` | The **`warden-v1` double-wrap** (`seal`/`open`): AEAD content + ECIES recipient gate + threshold-IBE condition gate, JSON wire form. |
+| `envelope` | The **`warden-v1` double-wrap** (`seal`/`open`): AEAD content + ECIES recipient gate + threshold-IBE condition gate. Plus the **`warden-gate-v1` condition-gate-only** primitive (`seal_gated`/`open_gated`) that wraps an *already-encrypted* blob (e.g. Maktub's v2 hybrid envelope) — Warden contributes timing, the host app keeps recipient confidentiality. JSON wire form. |
 | `fed` | The **federation file format** — `FederationPublic` (master pubkey + share pubkeys; published to clients) and `NodeShareFile` (a node's secret share). Crypto carried as hex-of-canonical; readable without `trusted-dealer`. Written by `warden-dealer`. |
 
 ## Features
