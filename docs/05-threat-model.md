@@ -42,6 +42,9 @@ BLS/IBE are pairing-based, not PQ-secure (stated tlock horizon ~5 years). For "s
 ### W7 — Condition-evaluation trust (Tier-2)
 Tier-1 (on-chain, finalized) is deterministic. **Tier-2** (oracle/API data) adds a **data-source trust** and determinism risk; keep it opt-in and clearly labeled. Identity must be domain-separated so a partial for one condition cannot open another (grinding/replay).
 
+### W8 — Open-request metadata channel (client → node)
+Opening a Veil envelope POSTs the **condition** (which embeds `beatId` + core address + chainId) to every node's `/partial`. So each node operator — and any on-path observer of that request — learns **requester-IP ↔ beatId interest** and the *timing* of the open attempt. The `beatId` and condition are already public on-chain; what's new is binding them to a requesting IP at open time. This is consistent with "not metadata-private" below, not a content leak (a tampered condition simply never releases — fail-closed). Mitigations for the independent-operator federation: client egress over a privacy-preserving transport (e.g. Tor/oblivious relay), and TLS pinning / a known-key channel to deny passive collectors the linkage. **Preview note:** with the all-ours testnet federation this is moot, but it MUST be tracked before independent operators. (App side: `mobile/lib/services/crypto/veil/veil.dart` `_fetchPartial`; tracked in #237.)
+
 ## What Warden is NOT trying to be
 
 - **Not trustless.** The trustless ideal is **witness encryption** (the on-chain proof *is* the key, no federation) — not deployable today. Warden is the best deployable approximation and is designed to migrate to WE via the `alg` envelope when it ships.
