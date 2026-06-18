@@ -59,6 +59,11 @@ pub enum IbeError {
     /// No share public key was supplied for a partial's node index.
     #[error("missing share public key for node {0}")]
     MissingSharePublicKey(ShareIndex),
+    /// Fewer than `t` partials verified — the threshold can't be met from this set.
+    /// (Message keeps the words "valid partials" / "need t=" so callers polling a federation
+    /// can distinguish this *transient* case from a permanent error.)
+    #[error("insufficient valid partials: {have} valid, need t={t}")]
+    InsufficientPartials { have: usize, t: usize },
 }
 
 /// The master public key `P_pub = s·g2 ∈ G2` — what ciphertexts encrypt against.
@@ -198,6 +203,41 @@ pub fn combine_verified(
         }
     }
     Ok(combine(partials))
+}
+
+/// Combine `t` partials from a **noisy** set — the client-side path against a real federation.
+///
+/// Unlike [`combine_verified`] (which fails on the first bad partial), this **drops** partials
+/// that don't verify against their published share public key, that carry an index with no
+/// known share public key, or that duplicate an already-accepted index — then Lagrange-combines
+/// the first `t` survivors. So one down/lagging/malicious node can't fail or grief the combine.
+/// Errors with [`IbeError::InsufficientPartials`] only if fewer than `t` valid partials remain.
+///
+/// This is the single source of the federation-noise policy; the WASM and FFI bindings call it
+/// rather than re-implementing the selection.
+pub fn combine_tolerant(
+    partials: &[Partial],
+    identity: &[u8],
+    share_pubkeys: &[SharePublicKey],
+    t: usize,
+) -> Result<G1Projective, IbeError> {
+    let mut good: std::collections::BTreeMap<ShareIndex, Partial> =
+        std::collections::BTreeMap::new();
+    for &p in partials {
+        if let Some(spk) = share_pubkeys.iter().find(|s| s.index == p.index) {
+            if verify_partial(&p, identity, spk) {
+                good.entry(p.index).or_insert(p);
+            }
+        }
+    }
+    if good.len() < t {
+        return Err(IbeError::InsufficientPartials {
+            have: good.len(),
+            t,
+        });
+    }
+    let chosen: Vec<Partial> = good.into_values().take(t).collect();
+    Ok(combine(&chosen))
 }
 
 /// Encrypt a 32-byte block to `identity` under the master public key (offline; no network).
@@ -345,6 +385,40 @@ mod tests {
         assert_eq!(
             combine_verified(&partials, ID, &spks),
             Err(IbeError::InvalidPartial(partials[1].index))
+        );
+    }
+
+    #[test]
+    fn combine_tolerant_drops_noise_and_enforces_threshold() {
+        let mut rng = csprng();
+        let msk = MasterKey::generate(&mut rng);
+        let msg: Block = rng.gen();
+        let ct = encrypt(&msk.public(), ID, &msg, &mut rng);
+        let shares = split(msk.secret(), 3, 5, &mut rng).unwrap();
+        let spks: Vec<_> = shares.iter().map(share_pubkey).collect();
+
+        // A noisy set: 3 good (idx 1,3,5) + a duplicate + a corrupted + an unknown-index partial.
+        let good: Vec<_> = [&shares[0], &shares[2], &shares[4]]
+            .iter()
+            .map(|s| partial(s, ID))
+            .collect();
+        let mut bad = partial(&shares[1], ID);
+        bad.value += G1Projective::generator(); // fails verification
+        let mut noisy = good.clone();
+        noisy.push(good[0]); // duplicate index
+        noisy.push(bad); // invalid signature
+        let mut unknown = partial(&shares[3], ID);
+        unknown.index = 99; // no matching share pubkey
+        noisy.push(unknown);
+
+        // Drops the dup/bad/unknown, combines the 3 valid → the real key.
+        let d_id = combine_tolerant(&noisy, ID, &spks, 3).unwrap();
+        assert_eq!(decrypt(&d_id, &ct), Some(msg));
+
+        // Only 2 valid (< t=3) → InsufficientPartials (transient, retryable).
+        assert_eq!(
+            combine_tolerant(&good[..2], ID, &spks, 3),
+            Err(IbeError::InsufficientPartials { have: 2, t: 3 })
         );
     }
 

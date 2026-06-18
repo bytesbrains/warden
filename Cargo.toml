@@ -12,4 +12,4 @@
 # before bumping anything.
 [workspace]
 resolver = "2"
-members = ["core", "dealer", "node", "cli"]
+members = ["core", "dealer", "node", "cli", "ffi"]

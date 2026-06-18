@@ -1114,6 +1114,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "warden-ffi"
+version = "0.0.0"
+dependencies = [
+ "ark-bls12-381",
+ "ark-serialize",
+ "hex",
+ "rand",
+ "serde_json",
+ "warden-core",
+]
+
+[[package]]
 name = "warden-node"
 version = "0.0.0"
 dependencies = [

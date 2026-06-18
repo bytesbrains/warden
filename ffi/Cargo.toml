@@ -1,0 +1,25 @@
+[package]
+name = "warden-ffi"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT"
+description = "Warden C-ABI FFI (Veil) for Dart/Flutter — condition identity, gate seal/open, threshold combine"
+publish = false
+
+[lib]
+# cdylib → Android `.so` / desktop dylib; staticlib → iOS `.a` linked into the app;
+# rlib → so the in-crate integration tests can call the extern fns directly.
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+# Core crypto. No trusted-dealer: the app never materializes the master secret.
+warden-core = { path = "../core", default-features = false }
+serde_json = "1"
+hex = "0.4"
+ark-bls12-381 = "0.4"  # G1Projective (combined IBE key d_id)
+ark-serialize = "0.4"  # de/serialize Partial / MasterPublicKey / d_id
+rand = "0.8"           # OsRng for sealing (native OS RNG)
+
+[dev-dependencies]
+serde_json = "1"

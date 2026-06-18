@@ -9,8 +9,6 @@
 //!
 //! ⚠️ Not audited. PoC.
 
-use std::collections::BTreeMap;
-
 use ark_bls12_381::G1Projective;
 use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 use rand::rngs::OsRng;
@@ -19,7 +17,7 @@ use wasm_bindgen::prelude::*;
 use warden_core::condition::Condition;
 use warden_core::envelope::{self, GatedEnvelope};
 use warden_core::fed::FederationPublic;
-use warden_core::ibe::{combine_verified, verify_partial, MasterPublicKey, Partial};
+use warden_core::ibe::{combine_tolerant, MasterPublicKey, Partial};
 
 fn err<E: std::fmt::Display>(e: E) -> JsError {
     JsError::new(&e.to_string())
@@ -82,27 +80,11 @@ pub fn combine(partials_json: &str, id_hex: &str, fed_json: &str) -> Result<Stri
     let id = hex::decode(id_hex).map_err(err)?;
     let fed: FederationPublic = serde_json::from_str(fed_json).map_err(err)?;
     let spks = fed.share_public_keys().map_err(err)?;
-
-    // Keep only partials that verify against their published share pubkey; dedup by index.
-    let mut good: BTreeMap<u64, Partial> = BTreeMap::new();
-    for h in &hexes {
-        let Ok(p) = de_hex::<Partial>(h, "partial") else {
-            continue;
-        };
-        if let Some(spk) = spks.iter().find(|s| s.index == p.index) {
-            if verify_partial(&p, &id, spk) {
-                good.entry(p.index).or_insert(p);
-            }
-        }
-    }
-    if good.len() < fed.t {
-        return Err(JsError::new(&format!(
-            "only {} valid partials, need t={}",
-            good.len(),
-            fed.t
-        )));
-    }
-    let chosen: Vec<Partial> = good.into_values().take(fed.t).collect();
-    let d_id = combine_verified(&chosen, &id, &spks).map_err(err)?;
+    // Parse partials, dropping malformed-hex ones; core does verify + dedup + threshold.
+    let partials: Vec<Partial> = hexes
+        .iter()
+        .filter_map(|h| de_hex::<Partial>(h, "partial").ok())
+        .collect();
+    let d_id = combine_tolerant(&partials, &id, &spks, fed.t).map_err(err)?;
     Ok(to_hex(&d_id))
 }

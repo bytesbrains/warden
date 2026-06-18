@@ -25,6 +25,7 @@ A Cargo workspace (`Cargo.toml`) plus the specs. Toolchain pinned to Rust 1.83 (
 | `dealer/` | `warden-dealer` crate — trusted-dealer ceremony CLI (testnet only; real DKG for mainnet) |
 | `node/` | `warden-node` crate (`wardend`) — node daemon: condition-watcher + threshold partial release over HTTP |
 | `cli/` | `warden-cli` crate (`warden`) — client: keygen, encrypt (double-wrap → CID), decrypt (poll → combine → open) |
+| `ffi/` | `warden-ffi` — C-ABI over core for Flutter/`dart:ffi` (Veil); cdylib/staticlib for Android/iOS |
 | `wasm/` | `warden-wasm` — wasm-bindgen bindings over core for the TS SDK (Veil); standalone workspace, compiles to `wasm32` |
 | `e2e/` | Veil end-to-end harness — drives the live Base Sepolia loop (create → seal → execute → decrypt → deactivate); finality/reorg notes in [`e2e/README.md`](e2e/README.md) |
 | `Dockerfile`, `docker-compose.yml` | Build `wardend`; bring up a 3-node PoC federation |
