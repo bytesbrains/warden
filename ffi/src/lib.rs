@@ -163,3 +163,30 @@ pub unsafe extern "C" fn warden_combine(
         Ok(ser_hex(&d_id))
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Regression guard for the `panic = "unwind"` invariant (`warden/Cargo.toml`). `guard`
+    /// must turn a Rust panic into `{"ok":false,...}`, never abort the host app. Under
+    /// `panic = "abort"` `catch_unwind` is a no-op and this test aborts the test binary
+    /// instead of returning — failing the build, which is exactly the protection the
+    /// invariant needs (CISO #214). The `ffi_errors_return_ok_false_not_panic` integration
+    /// test only covers the `Err` path; this covers an actual unwinding panic.
+    #[test]
+    fn guard_catches_panic_returns_ok_false() {
+        // Silence the default panic hook so the expected panic doesn't spam test output.
+        let prev = std::panic::take_hook();
+        std::panic::set_hook(Box::new(|_| {}));
+        let p = guard(|| panic!("boom inside guard"));
+        std::panic::set_hook(prev);
+
+        assert!(!p.is_null());
+        let s = unsafe { CStr::from_ptr(p) }.to_str().unwrap().to_string();
+        unsafe { warden_string_free(p) };
+        let v: serde_json::Value = serde_json::from_str(&s).unwrap();
+        assert_eq!(v["ok"], false);
+        assert_eq!(v["error"], "panic in warden-ffi");
+    }
+}

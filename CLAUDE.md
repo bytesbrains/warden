@@ -15,7 +15,7 @@ Scoped context for the Warden workspace — the **Veil** conditional-decryption 
 | `dealer/` | `warden-dealer` crate — the trusted-dealer ceremony CLI (WS-B). Materializes the master secret, Shamir-splits it, writes `federation.json` (public) + `shares/node-<i>.json` (secret, 0600). Testnet only. |
 | `node/` | `warden-node` crate (`wardend`, WS-C) — the node daemon: condition-watcher + `POST /partial` threshold release. Reads Base Sepolia at the `finalized` tag (`tiny_http` + `ureq`). The security-critical evaluator is `node/src/eval.rs`. |
 | `cli/` | `warden-cli` crate (`warden`, WS-D) — the client: `keygen` / `encrypt` (double-wrap → CID store) / `decrypt` (poll federation → combine → open, retry-until-released). |
-| `ffi/` | `warden-ffi` — thin **C-ABI** over core for the Flutter app via `dart:ffi` (Veil): `warden_condition_identity` / `warden_seal_gated` / `warden_open_gated` / `warden_combine` (+ `warden_string_free`). JSON/hex strings in, `{ok,value}` JSON out; panics caught at the boundary. `cdylib`/`staticlib` for Android/iOS. |
+| `ffi/` | `warden-ffi` — thin **C-ABI** over core for the Flutter app via `dart:ffi` (Veil): `warden_condition_identity` / `warden_seal_gated` / `warden_open_gated` / `warden_combine` (+ `warden_string_free`). JSON/hex strings in, `{ok,value}` JSON out; panics caught at the boundary. `cdylib`/`staticlib` for Android/iOS. **`ffi/build-mobile.sh [ios\|android\|all]`** cross-compiles into `mobile/` (iOS xcframework + 4-ABI Android jniLibs; artifacts git-ignored). |
 | `wasm/` | `warden-wasm` — `wasm-bindgen` bindings over core for the TS SDK (Veil): `condition_identity` / `seal_gated` / `open_gated` / `combine`. **Standalone workspace** (own `[workspace]`) — wasm-only + `getrandom`-js, so the parent's host builds/tests ignore it. Compiles to `wasm32`; build the npm pkg with `wasm-pack`. |
 | `Dockerfile`, `docker-compose.yml` | Build `wardend` + bring up a 3-node PoC federation. |
 | `e2e/` | Veil end-to-end harness (WS-E) — Node/ethers v6 orchestrator. `e2e/veil-e2e.mjs` drives the live Base Sepolia loop; `e2e/local/run.mjs` drives a **local Hardhat devnet** (no funds, `evm_increaseTime` skips the timer) and is the "prove Warden works for all conditions" gate. Not Rust; run from the repo root. Finality/reorg notes in [`e2e/README.md`](e2e/README.md); local runbook in [`e2e/local/README.md`](e2e/local/README.md). |
@@ -34,6 +34,8 @@ All five Phase-0 workstreams (WS-A…WS-E, #181) are now in the tree.
 
 - Veil is the long-horizon "time-bound encrypted delivery IS the product" direction — see the foundational specs and DECISION_LOG. It does **not** add governance/upgradeability to the protocol layer; the root immutability invariants still hold.
 - Keep `rust-toolchain.toml` and the pinned transitive deps in sync — see the comments in `core/Cargo.toml`.
+- **`panic = "unwind"` is an invariant** on every workspace profile (`Cargo.toml`): the `warden-ffi` boundary's `catch_unwind` turns a panic into `{"ok":false,…}` instead of aborting the host app. `panic = "abort"` would crash the mobile app — never set it.
+- **Mobile cross-compile** adds *targets* (iOS + Android NDK), not a channel bump — the 1.83 pin holds. Build with `ffi/build-mobile.sh`; outputs are git-ignored (build from source, never commit a binary).
 
 ## Commands (`cd warden`)
 

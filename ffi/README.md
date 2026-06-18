@@ -31,18 +31,62 @@ confidentiality in its own hybrid layer; `open_gated` returns the still-host-enc
 `staticlib` → iOS `.a`; `rlib` → the in-crate host tests.
 
 ```bash
-cargo test -p warden-ffi                                   # host round-trip vs the committed fixture
-# iOS (device + sim) static libs:
-cargo build -p warden-ffi --release --target aarch64-apple-ios
-cargo build -p warden-ffi --release --target aarch64-apple-ios-sim
-# Android (NDK targets), e.g.:
-cargo build -p warden-ffi --release --target aarch64-linux-android
+cargo test -p warden-ffi      # host round-trip vs the committed fixture (warden/wasm/test/fixture.json)
+cargo build -p warden-ffi     # host dylib for `flutter test` (mobile/test/.../warden_ffi_test.dart)
 ```
 
-## Next (the Dart side)
+The release profile keeps `panic = "unwind"` (see `warden/Cargo.toml`): the boundary's
+`catch_unwind` guard only works while panics unwind. **Never build the mobile libs with
+`panic = "abort"`** — a panic would kill the host app instead of returning `{"ok":false,…}`.
 
-- `ffigen` the Dart bindings from a generated C header (or hand-write the ~5 `Pointer<Utf8>`
-  signatures), wrap in an ergonomic `Veil` Dart class (free results, parse `{ok,value}`).
-- Bundle the native lib (iOS xcframework / Android jniLibs) into `mobile/`.
-- Wire the gate into `mobile/lib/services/crypto/` — the app already produces the v2 hybrid
-  envelope; the FFI adds the condition gate (`gate-over-hybrid`, same layering as the SDK).
+### Mobile (cross-compile)
+
+One script builds both platforms into `mobile/` (artifacts are git-ignored — regenerate from
+source; CISO: never commit a prebuilt binary):
+
+```bash
+warden/ffi/build-mobile.sh ios        # → mobile/ios/WardenFfi.xcframework  (device + simulator)
+warden/ffi/build-mobile.sh android    # → mobile/android/app/src/main/jniLibs/<abi>/libwarden_ffi.so
+warden/ffi/build-mobile.sh all        # both (default)
+```
+
+Prereqs: iOS — Xcode + `rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios`
+(the `x86_64-apple-ios` slice is fused into the simulator library with `lipo` so the xcframework
+links on Intel Macs / x86_64 macOS CI too). Android — the NDK + `cargo install cargo-ndk --locked`
++ `rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+i686-linux-android`; pin the NDK explicitly for reproducible release builds (e.g.
+`ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/<version>`). Builds run `--locked` so the shipped
+crypto is the audited `Cargo.lock` set. Adding *targets* does not bump the pinned 1.83 channel.
+
+**Android** is turn-key: Gradle bundles anything under `jniLibs/<abi>/` and `DynamicLibrary.open('libwarden_ffi.so')` resolves at runtime. Nothing else to wire.
+
+**iOS** needs a one-time Xcode wiring of the xcframework into the `Runner` target (operator step;
+not scriptable here without a device build):
+
+1. In Xcode, drag `mobile/ios/WardenFfi.xcframework` into the **Runner** target → *Frameworks,
+   Libraries, and Embedded Content* (it is a static lib — "Do Not Embed").
+2. The app references the `warden_*` symbols only at runtime via `DynamicLibrary.process()`, so
+   a static archive contributes nothing at link time and the symbols are never pulled in — they
+   must be force-loaded. Set **SDK-conditional** *Other Linker Flags* (`OTHER_LDFLAGS`) on the
+   **Runner** target so each SDK links its matching slice (the xcframework is referenced from
+   `$(SRCROOT)`, not copied into `$(BUILT_PRODUCTS_DIR)`):
+   ```
+   OTHER_LDFLAGS[sdk=iphoneos*]        = -force_load "$(SRCROOT)/WardenFfi.xcframework/ios-arm64/libwarden_ffi.a"
+   OTHER_LDFLAGS[sdk=iphonesimulator*] = -force_load "$(SRCROOT)/WardenFfi.xcframework/ios-arm64_x86_64-simulator/libwarden_ffi.a"
+   ```
+   (Avoid `-ObjC -all_load` here — it force-loads *every* static lib in the Flutter pod graph,
+   risking duplicate-symbol errors. The targeted `-force_load` above only pulls warden-ffi.)
+3. Build onto a device with the explicit-build flow (never bare `flutter install` — see
+   `mobile/CLAUDE.md`): `flutter build ios` then install.
+
+Symbol export is verified in both artifacts (`nm`): all five `warden_*` functions are global
+text symbols (iOS carries the leading-underscore C-ABI form; `process()` resolves the bare name).
+
+### Status
+
+The Dart bridge (`mobile/lib/services/crypto/veil/warden_ffi.dart`) and its host test are in the
+tree (#181 step 5b) and pass byte-for-byte against the same fixture as the Rust + WASM paths.
+Cross-compilation to iOS (xcframework) and Android (4-ABI jniLibs) is wired and verified
+(step 5c). **Remaining:** wire the gate into the Beat create/open flow under
+`mobile/lib/services/crypto/` (gate-over-hybrid: the app produces the v2 hybrid envelope, the FFI
+adds the condition gate, the federation poll releases it) — step 5d.

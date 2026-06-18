@@ -13,3 +13,14 @@
 [workspace]
 resolver = "2"
 members = ["core", "dealer", "node", "cli", "ffi"]
+
+# The FFI boundary (`warden-ffi`) catches panics with `catch_unwind` so a Rust panic
+# surfaces to Dart as `{"ok":false,...}` instead of aborting the host app. That guard
+# ONLY works while panics unwind — `panic = "abort"` would turn every panic into an
+# immediate process kill, taking the whole iOS/Android app down with it. Keep `unwind`
+# on every profile the mobile libs are built under (CISO invariant, #181 step 5c).
+[profile.release]
+panic = "unwind"
+
+[profile.dev]
+panic = "unwind"
