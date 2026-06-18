@@ -1,0 +1,38 @@
+# Per-node Warden federation member (testnet). One fly app per node; the deploy script
+# (deploy/fly/deploy.sh) overrides the app name with -a maktub-warden-node-<i>.
+#
+# TESTNET ONLY: an all-ours federation has ZERO timing-security (D-036) — real security
+# requires these nodes to run on independent institutions' own infra. This config is the
+# faithful topology + a clean hand-off (a real operator runs the same image on their fly/VM).
+app = "maktub-warden-node"
+primary_region = "iad"
+
+[build]
+  dockerfile = "deploy/fly/Dockerfile"
+
+# Non-secret config. Secrets (WARDEN_SHARE_B64, WARDEN_RPC_URL) are set via `fly secrets set`
+# by deploy.sh — never put them here.
+[env]
+  WARDEN_CHAIN_ID = "84532"          # Base Sepolia
+  WARDEN_FINALITY_TAG = "finalized"  # reorg-safe read tag (D-036: reorg-after-release is a leak)
+  WARDEN_LISTEN = "0.0.0.0:8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # The node holds a chain-watcher and must answer /partial reliably — keep it always-on,
+  # never scale to zero.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
