@@ -29,6 +29,13 @@ primary_region = "iad"
   auto_start_machines = true
   min_machines_running = 1
 
+  # Coarse edge throttle (complements the node's per-IP rate limit + fly's edge DDoS): queue
+  # above soft_limit, shed above hard_limit, so a flood can't pile unbounded work on one machine.
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 25
+    hard_limit = 50
+
   [[http_service.checks]]
     method = "GET"
     path = "/health"
