@@ -7,6 +7,9 @@ COPY core ./core
 COPY dealer ./dealer
 COPY node ./node
 COPY cli ./cli
+# ffi is a workspace member (#214) — cargo must load its manifest to parse the workspace,
+# even though we only build node/dealer/cli below (ffi is not a dependency of them).
+COPY ffi ./ffi
 RUN cargo build --release -p warden-node -p warden-dealer -p warden-cli
 
 FROM debian:bookworm-slim

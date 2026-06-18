@@ -6,9 +6,13 @@ the "prove Warden works for all conditions locally" gate before wiring Veil into
 
 ## What it verifies (`run.mjs`)
 
+Runs against the **frozen protocol** (deterministic ids D-038, canonical Flash D-039, permissionless backstop D-040). The beat id is `keccak256(sender, salt)`, computed before create — so the condition is sealed to the beat's own id with no counter race.
+
 1. **sealed-before** — payload sealed to `getHeartbeat(beatId).executed==true` is undecryptable while the Beat is active.
-2. **readable-after** — `evm_increaseTime` → `execute(beatId)` → once `executed==true`, the node releases, the client combines + opens, and **the payload matches**.
+1b. **discovery** — `getInboxBeats(recipient)` surfaces the new beat from canonical state (D-038), so a recipient can find it with no indexer.
+2. **readable-after** — `evm_increaseTime` → `execute(beatId)` (staked executor) → once `executed==true`, the node releases, the client combines + opens, and **the payload matches**.
 3. **revocation** — a `deactivate`d Beat is never decryptable.
+4. **backstop** — past `expiry + EXECUTION_GRACE`, an **unstaked** wallet executes and delivery still succeeds — proving liveness is independent of the executor market (D-040, #222).
 
 The crypto/threshold mechanics (t-of-n combine, partial verification, AEAD tamper, wrong-key)
 are already covered offline by `warden/cli/tests/cli_flow.rs`; this harness adds the **live
@@ -33,7 +37,7 @@ WARDEN_SHARE_FILE=warden/e2e/local/fed/shares/node-1.json WARDEN_RPC_URL=http://
 export PRIVATE_KEY=<hardhat account-0 key from `npx hardhat node`>
 FEDERATION=warden/e2e/local/fed/federation.json NODES=http://127.0.0.1:8551 \
   WARDEN_BIN=warden/target/debug/warden node warden/e2e/local/run.mjs
-# → ✓ CASE 1 / ✓ CASE 2 / ✓ CASE 3 / ✓ LOCAL WARDEN LOOP VERIFIED.
+# → ✓ CASE 1 / 1b / 2 / 3 / 4 / ✓ LOCAL WARDEN LOOP VERIFIED.
 ```
 
 For a real `t`-of-`n`, deal `-n 3 -t 2`, run three `wardend` on `:8551–8553`, and set

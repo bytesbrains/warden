@@ -3,7 +3,8 @@
 import { ethers } from "ethers";
 
 const CORE_ABI = [
-  "function createHeartbeat(address[] recipients, bytes payload, uint256 interval) payable returns (uint256 id)",
+  // D-038: creator-chosen deterministic id = keccak256(abi.encode(sender, salt)).
+  "function createHeartbeat(bytes32 salt, address[] recipients, bytes payload, uint256 interval) payable returns (uint256 id)",
   "function getHeartbeat(uint256 id) view returns (address owner, address[] recipients, bytes payload, uint256 interval, uint256 lastCheckIn, uint256 createdAt, uint256 checkInCount, bool executed, bool deactivated)",
   "function heartbeatCount() view returns (uint256)",
   "function execute(uint256 id)",
@@ -11,6 +12,9 @@ const CORE_ABI = [
   "function creationFeeFor(uint256 recipientCount) view returns (uint256)",
   "function isExpiredAndActive(uint256 id) view returns (bool)",
   "function MIN_INTERVAL() view returns (uint256)",
+  "function EXECUTION_GRACE() view returns (uint256)", // D-040: permissionless backstop window
+  "function getInboxBeats(address recipient) view returns (uint256[])", // D-038 recipient discovery
+  "function getOwnerBeats(address owner) view returns (uint256[])", // D-038 owner discovery
 ];
 const REWARDS_ABI = ["function isActiveExecutor(address account) view returns (bool)"];
 const REGISTRY_ABI = [
@@ -32,9 +36,24 @@ export function contracts(wallet, { core, rewards, registry }) {
   };
 }
 
-// The next Beat id (== current count, pre-increment) so the condition can be built before create.
-export async function nextBeatId(core) {
-  return (await core.heartbeatCount()).toString();
+// A fresh random 32-byte salt — the per-beat uniquifier for the content-addressed id (D-038).
+export function randomSalt() {
+  return ethers.hexlify(ethers.randomBytes(32));
+}
+
+// The deterministic Beat id the contract derives for (sender, salt): keccak256(abi.encode(...)),
+// as a decimal string (the form the Warden condition's `args` carry). Known BEFORE create — so
+// the Veil condition can be sealed to this beat's own id with no counter race (D-038).
+export function beatId(sender, salt) {
+  const h = ethers.keccak256(
+    ethers.AbiCoder.defaultAbiCoder().encode(["address", "bytes32"], [sender, salt])
+  );
+  return BigInt(h).toString();
+}
+
+// Recipient discovery (D-038): the beat ids where `recipient` is (or was) a recipient.
+export async function inboxBeats(core, recipient) {
+  return (await core.getInboxBeats(recipient)).map((x) => x.toString());
 }
 
 export async function requireExecutor(rewards, address) {
@@ -54,10 +73,10 @@ export async function ensureRegisteredRecipient(registry, address) {
   return true;
 }
 
-export async function createBeat(core, recipients, cid, interval) {
+export async function createBeat(core, salt, recipients, cid, interval) {
   const payload = ethers.toUtf8Bytes(cid); // store the Warden CID as the Beat payload
   const fee = await core.creationFeeFor(recipients.length);
-  const tx = await core.createHeartbeat(recipients, payload, interval, { value: fee });
+  const tx = await core.createHeartbeat(salt, recipients, payload, interval, { value: fee });
   await tx.wait(1);
 }
 

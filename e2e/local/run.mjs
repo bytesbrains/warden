@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // Local-devnet Warden test harness (#181 follow-up). Drives the full loop against a local
-// Hardhat node + warden federation, with NO changes to the warden/protocol code. Cases:
-//   1. sealed-before    active Beat → decrypt must FAIL
-//   2. readable-after   evm_increaseTime → execute → decrypt must SUCCEED (payload matches)
-//   3. revocation       deactivated Beat → decrypt must NEVER succeed
-//   4. threshold        only t-1 nodes reachable → FAIL (skipped if fewer nodes given)
+// Hardhat node + warden federation, on the FROZEN protocol (deterministic ids D-038, canonical
+// Flash D-039, permissionless backstop D-040). Cases:
+//   1.  sealed-before    active Beat → decrypt must FAIL
+//   1b. discovery        getInboxBeats surfaces the new beat from canonical state (D-038)
+//   2.  readable-after   evm_increaseTime → executor execute → decrypt SUCCEEDS (payload matches)
+//   3.  revocation       deactivated Beat → decrypt must NEVER succeed
+//   4.  backstop         past expiry+EXECUTION_GRACE, an UNSTAKED wallet executes → decrypt
+//                        SUCCEEDS — delivery works with no executor (D-040, #222)
 //
 // Execution modes:
 //   EXECUTE_MODE=self     (default) the harness stakes + calls execute() itself — fast,
@@ -83,13 +86,16 @@ function writeCondition(beatId) {
 
 async function sealAndCreate(core, registry, addr, label) {
   await chain.ensureRegisteredRecipient(registry, addr);
-  const beatId = await chain.nextBeatId(core);
+  // D-038: the id is keccak256(sender, salt), known BEFORE create — so we seal the Veil
+  // condition to this beat's own id with no counter race, then create with the same salt.
+  const salt = chain.randomSalt();
+  const beatId = chain.beatId(addr, salt);
   const { public: pub, secret } = warden.keygen(CFG.bin);
   const message = `local-veil ${label} beat=${beatId}`;
   const cid = warden.encrypt(CFG.bin, {
     federation: CFG.federation, recipient: pub, conditionFile: writeCondition(beatId), message, store: CFG.store,
   });
-  await chain.createBeat(core, [addr], cid, CFG.interval);
+  await chain.createBeat(core, salt, [addr], cid, CFG.interval);
   return { beatId, cid, secret, message };
 }
 
@@ -120,6 +126,12 @@ async function main() {
   mustSeal(s1);
   pass(`CASE 1 sealed-before: beat ${s1.beatId} undecryptable while active`);
 
+  // CASE 1b — discovery (D-038): the recipient index must surface the new beat from canonical
+  // state (the deterministic id is what was sealed), so a recipient can find it with no indexer.
+  const inbox = await chain.inboxBeats(c.core, addr);
+  if (!inbox.includes(s1.beatId)) die(`discovery: beat ${s1.beatId} not in getInboxBeats(${addr})`);
+  pass(`CASE 1b discovery: getInboxBeats surfaces beat ${s1.beatId}`);
+
   // CASE 2 — readable after execution.
   await timeTravel(provider, CFG.interval + 60);
   if (CFG.mode === "self") {
@@ -140,6 +152,23 @@ async function main() {
   await chain.deactivateBeat(c.core, s3.beatId);
   mustSeal(s3);
   pass(`CASE 3 revocation: deactivated beat ${s3.beatId} never decryptable`);
+
+  // CASE 4 — permissionless backstop (#222/D-040): delivery must work even with NO executor.
+  // A fresh, UNSTAKED wallet (not an executor) executes after expiry + EXECUTION_GRACE; the
+  // federation releases on executed==true regardless of who triggered it, so the recipient
+  // self-rescues. Proves delivery liveness is independent of the executor market.
+  const s4 = await sealAndCreate(c.core, c.registry, addr, "backstop");
+  const grace = Number(await c.core.EXECUTION_GRACE());
+  await timeTravel(provider, CFG.interval + grace + 60); // past expiry + grace
+  const rescuer = ethers.Wallet.createRandom().connect(provider);
+  await (await signer.sendTransaction({ to: rescuer.address, value: ethers.parseEther("1") })).wait(1);
+  if (await c.rewards.isActiveExecutor(rescuer.address)) die("rescuer unexpectedly an executor");
+  await (await chain.contracts(rescuer, CFG).core.execute(s4.beatId)).wait(1);
+  log(`executed beat ${s4.beatId} via backstop (unstaked ${rescuer.address.slice(0, 10)}…)`);
+  const r4 = tryDecrypt(s4, 60);
+  if (!r4.ok) die(`backstop: still sealed after execution: ${r4.stderr.trim()}`);
+  if (r4.stdout.trim() !== s4.message) die(`backstop payload mismatch: ${JSON.stringify(r4.stdout)}`);
+  pass(`CASE 4 backstop: delivery succeeded with NO executor (recipient self-rescued after grace)`);
 
   pass("LOCAL WARDEN LOOP VERIFIED.");
 }
