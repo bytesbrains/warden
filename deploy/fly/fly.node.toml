@@ -8,7 +8,10 @@ app = "maktub-warden-node"
 primary_region = "iad"
 
 [build]
-  dockerfile = "deploy/fly/Dockerfile"
+  # Path is resolved relative to THIS config file's directory (deploy/fly/), so just the
+  # filename. The build context is the cwd `fly deploy` runs from — deploy.sh cd's to warden/
+  # so the Dockerfile's `COPY core/ …` (workspace members) resolve.
+  dockerfile = "Dockerfile"
 
 # Non-secret config. Secrets (WARDEN_SHARE_B64, WARDEN_RPC_URL) are set via `fly secrets set`
 # by deploy.sh — never put them here.
