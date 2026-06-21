@@ -66,7 +66,7 @@ Two build targets produce the artifacts Maktub's **Veil** layer embeds:
 - `wasm/` → `wasm-pack build` → npm package consumed by the Maktub TS SDK.
 - `ffi/` → `ffi/build-mobile.sh` → iOS `xcframework` + Android `jniLibs` consumed by the Maktub app.
 
-> **Note (post-split):** `ffi/build-mobile.sh` still resolves its output path relative to the old monorepo layout (`$REPO_ROOT/mobile`). Until the published-artifact pipeline lands, pass an explicit output directory or publish prebuilt binaries — see the repo's issue tracker.
+> **Note (post-split):** `ffi/build-mobile.sh` defaults its output to `dist/mobile` inside this repo (git-ignored) and accepts `--out <dir>` to write straight into a consumer's tree (e.g. `--out /path/to/maktub/mobile`) — no monorepo-path assumption. A published-artifact pipeline is still tracked in the issue tracker.
 
 ## Relationship to Maktub
 

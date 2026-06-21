@@ -1,5 +1,8 @@
 /target
 
+# Default mobile cross-compile output (ffi/build-mobile.sh without --out) — build artifacts.
+/dist/
+
 # warden-dealer default output — SECRET share material; never commit a federation.
 /fed/
 

@@ -41,13 +41,15 @@ The release profile keeps `panic = "unwind"` (see `warden/Cargo.toml`): the boun
 
 ### Mobile (cross-compile)
 
-One script builds both platforms into `mobile/` (artifacts are git-ignored — regenerate from
-source; CISO: never commit a prebuilt binary):
+One script builds both platforms. Artifacts default to `dist/mobile` inside this repo (git-ignored
+— regenerate from source; CISO: never commit a prebuilt binary). Pass `--out <dir>` to write into a
+consumer's tree (e.g. the Maktub app's `mobile/`) instead:
 
 ```bash
-warden/ffi/build-mobile.sh ios        # → mobile/ios/WardenFfi.xcframework  (device + simulator)
-warden/ffi/build-mobile.sh android    # → mobile/android/app/src/main/jniLibs/<abi>/libwarden_ffi.so
-warden/ffi/build-mobile.sh all        # both (default)
+ffi/build-mobile.sh ios        # → dist/mobile/ios/WardenFfi.xcframework  (device + simulator)
+ffi/build-mobile.sh android    # → dist/mobile/android/app/src/main/jniLibs/<abi>/libwarden_ffi.so
+ffi/build-mobile.sh all        # both (default)
+ffi/build-mobile.sh all --out /path/to/maktub/mobile   # write straight into a consumer tree
 ```
 
 Prereqs: iOS — Xcode + `rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios`

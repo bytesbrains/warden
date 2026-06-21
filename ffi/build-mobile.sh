@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 # Cross-compile warden-ffi for the mobile app (Veil native bridge, #181 step 5c).
 #
-#   ./build-mobile.sh ios       → mobile/ios/WardenFfi.xcframework        (device + simulator)
-#   ./build-mobile.sh android   → mobile/android/app/src/main/jniLibs/<abi>/libwarden_ffi.so
+#   ./build-mobile.sh ios       → <out>/ios/WardenFfi.xcframework        (device + simulator)
+#   ./build-mobile.sh android   → <out>/android/app/src/main/jniLibs/<abi>/libwarden_ffi.so
 #   ./build-mobile.sh all       → both (default)
+#
+# Output base (<out>):
+#   --out <dir>   write artifacts under <dir> instead of the default. A downstream consumer
+#                 (e.g. the Maktub app post-split) points this at its own mobile/ tree:
+#                   ./build-mobile.sh all --out /path/to/maktub/mobile
+#   default       <warden>/dist/mobile — self-contained, inside this repo, git-ignored.
+#                 (Standalone repo: there is no monorepo `$REPO_ROOT/mobile` to reach into.)
 #
 # Outputs are git-ignored build artifacts — regenerate after any change to warden-core/ffi
 # (and after a redeploy is irrelevant here: the gate crypto has no on-chain addresses baked in).
@@ -26,10 +33,27 @@
 set -euo pipefail
 
 WARDEN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(cd "$WARDEN_DIR/.." && pwd)"
-MOBILE_DIR="$REPO_ROOT/mobile"
 LIB="libwarden_ffi"
-WHAT="${1:-all}"
+
+usage() { echo "usage: $0 [ios|android|all] [--out <dir>]" >&2; }
+
+WHAT=""
+OUT_DIR=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    ios|android|all) WHAT="$1"; shift ;;
+    --out)           [ $# -ge 2 ] || { echo "--out requires a directory" >&2; usage; exit 2; }
+                     OUT_DIR="$2"; shift 2 ;;
+    --out=*)         OUT_DIR="${1#*=}"; shift ;;
+    -h|--help)       usage; exit 0 ;;
+    *)               echo "unknown argument: $1" >&2; usage; exit 2 ;;
+  esac
+done
+
+WHAT="${WHAT:-all}"
+# Default to a self-contained, git-ignored build dir inside this repo — no monorepo path
+# assumption. Consumers override with --out to drop artifacts straight into their app tree.
+MOBILE_DIR="${OUT_DIR:-$WARDEN_DIR/dist/mobile}"
 
 build_ios() {
   echo "==> iOS: cross-compiling $LIB (device + simulator arm64+x86_64, release, --locked)"
@@ -49,6 +73,7 @@ build_ios() {
 
   local out="$MOBILE_DIR/ios/WardenFfi.xcframework"
   echo "==> iOS: assembling $out (ios-arm64 device + universal simulator)"
+  mkdir -p "$(dirname "$out")"   # the --out base may not pre-exist (e.g. default dist/mobile)
   rm -rf "$out"
   xcodebuild -create-xcframework \
     -library "$WARDEN_DIR/target/aarch64-apple-ios/release/$LIB.a" \
@@ -70,5 +95,4 @@ case "$WHAT" in
   ios)     build_ios ;;
   android) build_android ;;
   all)     build_ios; build_android ;;
-  *) echo "usage: $0 [ios|android|all]" >&2; exit 2 ;;
 esac
