@@ -40,6 +40,38 @@ A Cargo workspace (`Cargo.toml`) plus the specs. Toolchain pinned to Rust 1.83 (
 | `docs/GLOSSARY.md` | Terms (DKG, IBE, threshold BLS, …) |
 | `docs/references/drand-analysis.md` | Fetched + analyzed drand v2 reference |
 
+## Build & run
+
+Rust toolchain is pinned (`rust-toolchain.toml`); `rustup` will honor it automatically.
+
+```sh
+# Build the whole workspace (node, dealer, cli, core)
+cargo build --release
+
+# Run the test suite (offline crypto loop — no chain needed)
+cargo test
+
+# Bring up a local 3-node PoC federation (2-of-3) against Base Sepolia:
+cargo run -p warden-dealer -- --out fed -n 3 -t 2 --network warden-poc-local
+export WARDEN_RPC_URL=https://sepolia.base.org   # or your own endpoint
+docker compose up --build
+```
+
+`wardend` (the node) and `warden` (the client) are the two binaries; see [`docs/06-operator-manual.md`](docs/06-operator-manual.md) to run a node and [`cli/`](cli) for the client flow. **All-ours testnet = zero security by design; do not use for real secrets.**
+
+### Consumers (Veil)
+
+Two build targets produce the artifacts Maktub's **Veil** layer embeds:
+
+- `wasm/` → `wasm-pack build` → npm package consumed by the Maktub TS SDK.
+- `ffi/` → `ffi/build-mobile.sh` → iOS `xcframework` + Android `jniLibs` consumed by the Maktub app.
+
+> **Note (post-split):** `ffi/build-mobile.sh` still resolves its output path relative to the old monorepo layout (`$REPO_ROOT/mobile`). Until the published-artifact pipeline lands, pass an explicit output directory or publish prebuilt binaries — see the repo's issue tracker.
+
 ## Relationship to Maktub
 
-Tracked in the Maktub repo under the `warden` label: decision/exploration **#177**, Veil spec **#178**, key-network diligence **#179**. License target: **MIT** (consistent with Maktub protocol/SDK).
+Warden is the network beneath **Veil**, but is intentionally **standalone**: any application needing "decrypt only when this on-chain condition holds" can build on it. Origin and diligence are tracked in the Maktub repo under the `warden` label — decision/exploration **#177**, Veil spec **#178**, key-network diligence **#179**.
+
+## License
+
+License target: **MIT** — consistent with the Maktub protocol/SDK, and chosen so Warden can serve as a public-good network anyone can run. *(LICENSE file pending — copyright holder/entity to be confirmed.)*
