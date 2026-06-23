@@ -33,7 +33,13 @@ jobs:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
       - uses: Swatinem/rust-cache@v2
       - name: Cross-compile (release, --locked)
-        run: ffi/build-mobile.sh ios
+        run: ffi/build-mobile.sh ios-framework
+      - name: Verify warden_* symbols are exported
+        run: |
+          bin=$(find dist/mobile/ios/WardenFfi.xcframework -path '*ios-arm64/WardenFfi.framework/WardenFfi' | head -1)
+          n=$(nm -gU "$bin" | grep -c '_warden_' || true)
+          echo "exported warden_* symbols: $n"
+          test "$n" -ge 5
       - name: Zip xcframework
         # ditto preserves the framework bundle layout/symlinks better than `zip`.
         run: ditto -c -k --keepParent dist/mobile/ios/WardenFfi.xcframework WardenFfi.xcframework.zip

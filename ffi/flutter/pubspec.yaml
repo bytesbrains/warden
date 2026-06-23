@@ -1,0 +1,43 @@
+name: warden_ffi_flutter
+description: >-
+  Flutter plugin that bundles the Warden native FFI library (the Veil bridge) — a
+  threshold conditional-decryption gate — so an app gets it with no Rust toolchain
+  and no native build wiring. Wraps the warden_ffi binding.
+# Pre-release: Warden is a Phase-0 PoC; the timing guarantee is unproven on a
+# production federation. Pinned EXACT, same discipline as warden_ffi.
+version: 0.1.0-dev.1
+repository: https://github.com/bytesbrains/warden
+issue_tracker: https://github.com/bytesbrains/warden/issues
+homepage: https://github.com/bytesbrains/warden
+topics:
+  - ffi
+  - cryptography
+  - threshold
+  - blockchain
+
+environment:
+  sdk: ^3.4.0
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # The pure Dart binding. This plugin only adds the native library + platform wiring.
+  # A range (not an exact pin) so consumers can co-resolve warden_ffi — pub.dev rejects
+  # an exact pin on a published library. An end app that wants an exact pin still sets
+  # one in its own pubspec (it wins in resolution); the ABI is stable within 0.1.x.
+  warden_ffi: ^0.1.0-dev.1
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+
+# FFI plugin: no Dart plugin class — the native library is bundled per platform
+# (iOS: an embedded dynamic framework downloaded by the podspec; Android: jniLibs
+# downloaded by build.gradle). DynamicLibrary.process()/open() then resolves it.
+flutter:
+  plugin:
+    platforms:
+      android:
+        ffiPlugin: true
+      ios:
+        ffiPlugin: true

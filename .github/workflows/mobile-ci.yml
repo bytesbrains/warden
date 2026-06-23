@@ -38,6 +38,24 @@ jobs:
       - name: cargo test -p warden-ffi
         run: cargo test --locked -p warden-ffi
 
+  plugin-check:
+    name: warden_ffi_flutter (analyze + publish dry-run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: pub get
+        working-directory: ffi/flutter
+        run: flutter pub get
+      - name: analyze
+        working-directory: ffi/flutter
+        run: dart analyze
+      - name: publish dry-run
+        working-directory: ffi/flutter
+        run: flutter pub publish --dry-run
+
   build-ios:
     name: iOS xcframework (build check)
     runs-on: macos-latest
@@ -47,8 +65,15 @@ jobs:
         with:
           targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
       - uses: Swatinem/rust-cache@v2
-      - name: build-mobile.sh ios
-        run: ffi/build-mobile.sh ios
+      - name: build-mobile.sh ios-framework (dynamic)
+        run: ffi/build-mobile.sh ios-framework
+      - name: Verify warden_* symbols are exported
+        run: |
+          bin=$(find dist/mobile/ios/WardenFfi.xcframework -path '*ios-arm64/WardenFfi.framework/WardenFfi' | head -1)
+          echo "device framework binary: $bin"
+          n=$(nm -gU "$bin" | grep -c '_warden_' || true)
+          echo "exported warden_* symbols: $n"
+          test "$n" -ge 5
 
   build-android:
     name: Android jniLibs (build check)

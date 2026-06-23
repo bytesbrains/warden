@@ -53,8 +53,12 @@ Each `v*` tag publishes the cross-compiled binaries as **GitHub Release assets**
 
 Pick the release whose version matches the `warden_ffi` pub.dev version you depend on — both are cut
 from the same tag, so they're always compatible. A consuming-app redeploy is irrelevant (the gate
-crypto bakes in no on-chain addresses). _(A `warden_ffi_flutter` plugin that does this download
-automatically at build time is tracked in [#4](https://github.com/bytesbrains/warden/issues/4).)_
+crypto bakes in no on-chain addresses).
+
+**Flutter apps: prefer the [`warden_ffi_flutter`](flutter/) plugin** — it does this download
+automatically at build time (iOS embeds a dynamic framework, Android downloads jniLibs), so you add
+one pub.dev dependency and need neither a manual download nor any Xcode/Gradle wiring. The manual
+download above is for non-plugin consumers or for pinning the binary yourself.
 
 ### Mobile (build from source — for warden developers)
 
