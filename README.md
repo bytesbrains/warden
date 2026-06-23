@@ -65,7 +65,7 @@ docker compose up --build
 
 A consuming app embeds one of two bindings over the same Rust core (Maktub's **Veil** layer is one such consumer):
 
-- **Flutter / Dart** — the `warden_ffi` binding is published on **[pub.dev](https://pub.dev/packages/warden_ffi)**. The native library it wraps is built locally by `ffi/build-mobile.sh [ios|android|all] [--out <dir>]` (iOS `xcframework` + Android `jniLibs`; output git-ignored, `--out` writes straight into a consumer's tree — no monorepo-path assumption).
+- **Flutter / Dart** — the `warden_ffi` binding is published on **[pub.dev](https://pub.dev/packages/warden_ffi)**. The native library it wraps is published as **GitHub Release assets** (`WardenFfi.xcframework.zip` + `warden-ffi-android-jniLibs.zip`, built by the `mobile-release` workflow on each `v*` tag), so consumers download a prebuilt binary instead of needing a Rust cross-compile toolchain. Building from source is still available for warden developers via `ffi/build-mobile.sh [ios|android|all] [--out <dir>]`. See [`ffi/README.md`](ffi/README.md) for both paths. _(A turn-key `warden_ffi_flutter` plugin that pulls the release binary automatically is tracked in [#4](https://github.com/bytesbrains/warden/issues/4).)_
 - **TypeScript / JavaScript** — build the wasm bindings with `wasm-pack build` in `wasm/`. (Today these are consumed bundled inside a host SDK rather than published as a standalone npm package.)
 
 ## Standalone by design

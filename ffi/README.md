@@ -39,7 +39,24 @@ The release profile keeps `panic = "unwind"` (see `warden/Cargo.toml`): the boun
 `catch_unwind` guard only works while panics unwind. **Never build the mobile libs with
 `panic = "abort"`** — a panic would kill the host app instead of returning `{"ok":false,…}`.
 
-### Mobile (cross-compile)
+### Mobile (prebuilt — recommended for consumers)
+
+Each `v*` tag publishes the cross-compiled binaries as **GitHub Release assets** via the
+`mobile-release` workflow, so a consuming app does **not** need a Rust/iOS/Android cross toolchain
+— download and unpack the matching version:
+
+| asset | unpack into the consuming app |
+|---|---|
+| `WardenFfi.xcframework.zip` | `ios/WardenFfi.xcframework` (then the one-time Xcode wiring below) |
+| `warden-ffi-android-jniLibs.zip` | `android/app/src/main/` (yields `jniLibs/<abi>/libwarden_ffi.so`) |
+| `SHA256SUMS` | verify the two zips before unpacking |
+
+Pick the release whose version matches the `warden_ffi` pub.dev version you depend on — both are cut
+from the same tag, so they're always compatible. A consuming-app redeploy is irrelevant (the gate
+crypto bakes in no on-chain addresses). _(A `warden_ffi_flutter` plugin that does this download
+automatically at build time is tracked in [#4](https://github.com/bytesbrains/warden/issues/4).)_
+
+### Mobile (build from source — for warden developers)
 
 One script builds both platforms. Artifacts default to `dist/mobile` inside this repo (git-ignored
 — regenerate from source; never commit a prebuilt binary). Pass `--out <dir>` to write into a

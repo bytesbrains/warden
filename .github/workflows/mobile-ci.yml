@@ -1,0 +1,69 @@
+# Build-check for the mobile FFI artifacts — proves the iOS xcframework and the
+# Android jniLibs still cross-compile, and the FFI host round-trip still passes.
+# Non-publishing: it never cuts a release (that's mobile-release.yml, on a tag).
+#
+# Path-filtered to the crates that actually change the binary, so unrelated edits
+# (docs, the wasm SDK, node/cli) don't spin up Rust cross-compiles.
+name: mobile-ci
+
+on:
+  pull_request:
+    paths:
+      - 'core/**'
+      - 'ffi/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/mobile-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'core/**'
+      - 'ffi/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/mobile-ci.yml'
+
+# rust-toolchain.toml pins the channel (1.83.0); the action just installs it + adds
+# the cross targets. Builds run --locked so CI uses the audited Cargo.lock set.
+jobs:
+  host-test:
+    name: FFI host round-trip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo test -p warden-ffi
+        run: cargo test --locked -p warden-ffi
+
+  build-ios:
+    name: iOS xcframework (build check)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
+      - uses: Swatinem/rust-cache@v2
+      - name: build-mobile.sh ios
+        run: ffi/build-mobile.sh ios
+
+  build-android:
+    name: Android jniLibs (build check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+      - name: build-mobile.sh android
+        # ubuntu-latest ships an NDK; cargo-ndk reads ANDROID_NDK_HOME. Pin it to the
+        # runner's NDK so the build is reproducible against a known toolchain.
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+        run: ffi/build-mobile.sh android
