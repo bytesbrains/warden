@@ -1,0 +1,93 @@
+# Publish prebuilt mobile FFI binaries as GitHub Release assets.
+#
+# Trigger: a version tag push (`v*`). The binary version is thereby kept in lockstep
+# with the `warden_ffi` pub.dev version — cut both from the same tag (e.g. v0.1.0-dev.1).
+# Not per-merge: most main merges don't change the binary, and auto-tagging would
+# decouple the artifact from the published Dart binding version.
+#
+# workflow_dispatch runs the builds without releasing (the release job is tag-gated),
+# so you can smoke-test artifact production on a branch before tagging.
+#
+# Produces, attached to the Release for the tag:
+#   WardenFfi.xcframework.zip          (iOS device + simulator)
+#   warden-ffi-android-jniLibs.zip     (Android: jniLibs/<abi>/libwarden_ffi.so, 4 ABIs)
+#   SHA256SUMS
+name: mobile-release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write   # create/update the Release and upload assets
+
+jobs:
+  build-ios:
+    name: Build iOS xcframework
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
+      - uses: Swatinem/rust-cache@v2
+      - name: Cross-compile (release, --locked)
+        run: ffi/build-mobile.sh ios
+      - name: Zip xcframework
+        # ditto preserves the framework bundle layout/symlinks better than `zip`.
+        run: ditto -c -k --keepParent dist/mobile/ios/WardenFfi.xcframework WardenFfi.xcframework.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: WardenFfi.xcframework.zip
+          if-no-files-found: error
+
+  build-android:
+    name: Build Android jniLibs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-ndk
+        # Pinned: cargo-ndk 4.x requires rustc 1.86, but the toolchain is pinned at
+        # 1.83 (rust-toolchain.toml). 3.5.4 is the last line that builds on 1.83.
+        # Pinning the tool also keeps the cross-compile reproducible.
+        run: cargo install cargo-ndk@3.5.4 --locked
+      - name: Cross-compile (release, --locked)
+        # The runner exposes the NDK path as the shell var $ANDROID_NDK_LATEST_HOME (NOT the
+        # ${{ env }} expression context), so set ANDROID_NDK_HOME inline — pins the build to a
+        # known NDK for reproducibility.
+        run: ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" ffi/build-mobile.sh android
+      - name: Zip jniLibs
+        working-directory: dist/mobile/android/app/src/main
+        run: zip -r "$GITHUB_WORKSPACE/warden-ffi-android-jniLibs.zip" jniLibs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: warden-ffi-android-jniLibs.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish Release assets
+    needs: [build-ios, build-android]
+    runs-on: ubuntu-latest
+    # Only publish on a real tag push; workflow_dispatch stops after the builds above.
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - name: Checksums
+        run: sha256sum WardenFfi.xcframework.zip warden-ffi-android-jniLibs.zip > SHA256SUMS
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            WardenFfi.xcframework.zip
+            warden-ffi-android-jniLibs.zip
+            SHA256SUMS
+          fail_on_unmatched_files: true

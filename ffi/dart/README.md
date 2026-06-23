@@ -40,13 +40,17 @@ boundary catches panics and returns a structured error).
 ## Bring your own native library
 
 This package is the **binding only** — it does not ship a native binary (they're large and
-platform-specific). Build it from the [`warden`](https://github.com/bytesbrains/warden) repo:
+platform-specific). For **mobile**, download the prebuilt binary for your version from the
+[warden Releases](https://github.com/bytesbrains/warden/releases) (`WardenFfi.xcframework.zip` +
+`warden-ffi-android-jniLibs.zip`) — no Rust toolchain needed; pick the release matching this
+package's version. For **desktop/tests**, or to build mobile from source, build from the
+[`warden`](https://github.com/bytesbrains/warden) repo:
 
 ```sh
 # Desktop / tests — a host dylib:
 cargo build -p warden-ffi          # → target/debug/libwarden_ffi.{dylib,so}
 
-# Mobile — iOS xcframework + Android jniLibs, written into your app tree:
+# Mobile from source — iOS xcframework + Android jniLibs, written into your app tree:
 ffi/build-mobile.sh all --out /path/to/your-app/mobile
 ```
 
