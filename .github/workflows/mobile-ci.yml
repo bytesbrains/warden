@@ -60,7 +60,10 @@ jobs:
           targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android,i686-linux-android
       - uses: Swatinem/rust-cache@v2
       - name: Install cargo-ndk
-        run: cargo install cargo-ndk --locked
+        # Pinned: cargo-ndk 4.x requires rustc 1.86, but the toolchain is pinned at
+        # 1.83 (rust-toolchain.toml). 3.5.4 is the last line that builds on 1.83.
+        # Pinning the tool also keeps the cross-compile reproducible.
+        run: cargo install cargo-ndk@3.5.4 --locked
       - name: build-mobile.sh android
         # ubuntu-latest ships an NDK; cargo-ndk reads ANDROID_NDK_HOME. Pin it to the
         # runner's NDK so the build is reproducible against a known toolchain.
