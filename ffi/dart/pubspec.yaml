@@ -1,0 +1,26 @@
+name: warden_ffi
+description: >-
+  Dart FFI bindings for Warden's native threshold conditional-decryption gate —
+  seal/open a blob behind an on-chain condition and combine threshold partials.
+  Bring your own native library (build it from the warden/ffi Rust crate).
+# Pre-release: Warden is a Phase-0 PoC; the timing guarantee is unproven on a
+# production federation. `^` constraints won't auto-adopt a pre-release.
+version: 0.1.0-dev.1
+repository: https://github.com/bytesbrains/warden
+issue_tracker: https://github.com/bytesbrains/warden/issues
+homepage: https://github.com/bytesbrains/warden
+topics:
+  - ffi
+  - cryptography
+  - threshold
+  - blockchain
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  ffi: ^2.1.0
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0
