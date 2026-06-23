@@ -65,8 +65,7 @@ jobs:
         # Pinning the tool also keeps the cross-compile reproducible.
         run: cargo install cargo-ndk@3.5.4 --locked
       - name: build-mobile.sh android
-        # ubuntu-latest ships an NDK; cargo-ndk reads ANDROID_NDK_HOME. Pin it to the
-        # runner's NDK so the build is reproducible against a known toolchain.
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
-        run: ffi/build-mobile.sh android
+        # ubuntu-latest ships an NDK; cargo-ndk reads ANDROID_NDK_HOME. The runner exposes
+        # the path as the shell var $ANDROID_NDK_LATEST_HOME (NOT the ${{ env }} expression
+        # context), so set it inline — pins the build to a known NDK for reproducibility.
+        run: ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" ffi/build-mobile.sh android

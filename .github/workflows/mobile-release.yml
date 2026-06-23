@@ -58,9 +58,10 @@ jobs:
         # Pinning the tool also keeps the cross-compile reproducible.
         run: cargo install cargo-ndk@3.5.4 --locked
       - name: Cross-compile (release, --locked)
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
-        run: ffi/build-mobile.sh android
+        # The runner exposes the NDK path as the shell var $ANDROID_NDK_LATEST_HOME (NOT the
+        # ${{ env }} expression context), so set ANDROID_NDK_HOME inline — pins the build to a
+        # known NDK for reproducibility.
+        run: ANDROID_NDK_HOME="$ANDROID_NDK_LATEST_HOME" ffi/build-mobile.sh android
       - name: Zip jniLibs
         working-directory: dist/mobile/android/app/src/main
         run: zip -r "$GITHUB_WORKSPACE/warden-ffi-android-jniLibs.zip" jniLibs
