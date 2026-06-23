@@ -59,16 +59,14 @@ export WARDEN_RPC_URL=https://sepolia.base.org   # or your own endpoint
 docker compose up --build
 ```
 
-`wardend` (the node) and `warden` (the client) are the two binaries; see [`docs/06-operator-manual.md`](docs/06-operator-manual.md) to run a node and [`cli/`](cli) for the client flow. **All-ours testnet = zero security by design; do not use for real secrets.**
+`wardend` (the node) and `warden` (the client) are the two binaries; see [`docs/06-operator-manual.md`](docs/06-operator-manual.md) to run a node and [`cli/`](cli) for the client flow. A prebuilt `wardend` image is published at **[`bytesbrains/warden`](https://hub.docker.com/r/bytesbrains/warden)** on Docker Hub (`docker pull bytesbrains/warden`), so operators can run a node without building from source. **All-ours testnet = zero security by design; do not use for real secrets.**
 
 ### Client bindings (for consuming apps)
 
-Two build targets produce the artifacts a consuming app embeds (Maktub's **Veil** layer is one such consumer):
+A consuming app embeds one of two bindings over the same Rust core (Maktub's **Veil** layer is one such consumer):
 
-- `wasm/` → `wasm-pack build` → npm package for a TypeScript/JavaScript SDK.
-- `ffi/` → `ffi/build-mobile.sh` → iOS `xcframework` + Android `jniLibs` for a mobile app.
-
-> **Note:** `ffi/build-mobile.sh` defaults its output to `dist/mobile` inside this repo (git-ignored) and accepts `--out <dir>` to write straight into a consumer's tree (e.g. `--out /path/to/your-app/mobile`) — no monorepo-path assumption. A published-artifact pipeline is still on the roadmap.
+- **Flutter / Dart** — the `warden_ffi` binding is published on **[pub.dev](https://pub.dev/packages/warden_ffi)**. The native library it wraps is built locally by `ffi/build-mobile.sh [ios|android|all] [--out <dir>]` (iOS `xcframework` + Android `jniLibs`; output git-ignored, `--out` writes straight into a consumer's tree — no monorepo-path assumption).
+- **TypeScript / JavaScript** — build the wasm bindings with `wasm-pack build` in `wasm/`. (Today these are consumed bundled inside a host SDK rather than published as a standalone npm package.)
 
 ## Standalone by design
 
