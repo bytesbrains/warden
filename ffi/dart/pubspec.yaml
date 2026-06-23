@@ -1,8 +1,8 @@
 name: warden_ffi
 description: >-
-  Dart FFI bindings for Warden's native threshold conditional-decryption gate —
-  seal/open a blob behind an on-chain condition and combine threshold partials.
-  Bring your own native library (build it from the warden/ffi Rust crate).
+  Dart FFI bindings for Warden — a threshold conditional-decryption gate. Seal a
+  blob behind an on-chain condition, then open it once the federation releases
+  the key. Bring your own native library.
 # Pre-release: Warden is a Phase-0 PoC; the timing guarantee is unproven on a
 # production federation. `^` constraints won't auto-adopt a pre-release.
 version: 0.1.0-dev.1

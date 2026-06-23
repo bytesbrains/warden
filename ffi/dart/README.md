@@ -1,34 +1,52 @@
 # warden_ffi
 
-Dart FFI bindings for **Warden**'s native threshold **conditional-decryption gate** — seal a
-blob behind an on-chain condition, and open it once the federation releases the key.
+Dart FFI bindings for **Warden** — a threshold **conditional-decryption** gate.
 
-> ⚠️ **EXPERIMENTAL — pre-release.** Warden is a Phase-0 PoC. On an all-ours test federation the
-> *timing* guarantee is zero-security (do not claim "unreadable until the condition triggers");
-> this gate provides condition-binding only. Treat as preview until a production federation +
-> audit. `^` constraints won't auto-select a pre-release — pin it explicitly.
+Seal an (already-encrypted) blob so it can only be opened once a federation of independent
+nodes agrees that an **on-chain condition has become true** — then open it with the released
+key. The cryptography lives once in audited Rust ([`warden`](https://github.com/bytesbrains/warden));
+this package is the thin, safe Dart binding over its C ABI.
 
-## What it does
+> ⚠️ **Experimental — pre-release.** Warden is a Phase-0 proof of concept. On a single-operator
+> test federation the *timing* guarantee is **not security** — do not claim "unreadable until the
+> condition triggers." This gate gives you *condition-binding*; recipient confidentiality (if you
+> need it) must come from your own encryption layer underneath. Treat as preview until there's a
+> production federation and an audit. Being a pre-release, `^` constraints won't auto-select it —
+> depend on it explicitly.
 
-A thin, safe wrapper over the `warden_*` C ABI (JSON/hex in, `{ok,value|error}` JSON out):
+## What problem it solves
 
-- `conditionIdentity(conditionJson)` — `H(condition)` hex.
-- `sealGated(conditionJson, masterPubHex, network, blobHex)` — gate an already-encrypted blob.
-- `openGated(envelopeJson, dIdHex)` — undo the gate with the released key.
-- `combine(partialsJson, idHex, fedJson)` — combine `t` threshold partials → `d_id`.
+You have a payload that should become decryptable **only when some condition is met** — a deadline
+passes, a contract flips a flag, an event fires. Warden's federation holds shares of a master key
+and releases a per-item decryption key **only** when the condition it was sealed against is
+observed on-chain. No single node can release early; no central server can be compelled to.
 
-The pairing crypto lives once in audited Rust (`warden/ffi`); this package only marshals.
+This package lets a Dart/Flutter program drive that flow natively.
+
+## API
+
+`WardenFfi` is a stateless, reentrant wrapper. JSON/hex in, JSON-validated values out:
+
+| Method | Purpose |
+|---|---|
+| `conditionIdentity(conditionJson)` | `H(condition)` — the identity a payload is sealed to. |
+| `sealGated(conditionJson, masterPubHex, network, blobHex)` | Gate an already-encrypted blob → envelope JSON. |
+| `combine(partialsJson, idHex, fedJson)` | Combine `t` threshold partials from the federation → `d_id`. |
+| `openGated(envelopeJson, dIdHex)` | Open the gate with the released `d_id` → the original blob. |
+
+Bad input or a wrong-condition key throws `WardenFfiException` — never a crash (the native
+boundary catches panics and returns a structured error).
 
 ## Bring your own native library
 
-This package is the Dart binding only — it does **not** ship the native binary. Build it from
-the [`warden`](https://github.com/bytesbrains/warden) repo's `ffi` crate:
+This package is the **binding only** — it does not ship a native binary (they're large and
+platform-specific). Build it from the [`warden`](https://github.com/bytesbrains/warden) repo:
 
 ```sh
-# Host dylib (desktop / tests):
+# Desktop / tests — a host dylib:
 cargo build -p warden-ffi          # → target/debug/libwarden_ffi.{dylib,so}
 
-# Mobile artifacts (iOS xcframework + Android jniLibs):
+# Mobile — iOS xcframework + Android jniLibs, written into your app tree:
 ffi/build-mobile.sh all --out /path/to/your-app/mobile
 ```
 
@@ -37,20 +55,32 @@ Then load it:
 ```dart
 import 'package:warden_ffi/warden_ffi.dart';
 
-// Desktop/tests: explicit path. iOS/macOS: linked into the process (omit path).
-// Android: loads libwarden_ffi.so from jniLibs (omit path).
-final w = WardenFfi.load(path: 'target/debug/libwarden_ffi.dylib');
+// Desktop / tests: pass an explicit path.
+// iOS / macOS: linked into the process — call `WardenFfi.load()` (no path).
+// Android: loads `libwarden_ffi.so` from jniLibs — `WardenFfi.load()` (no path).
+final warden = WardenFfi.load(path: 'target/debug/libwarden_ffi.dylib');
 
-final id  = w.conditionIdentity(conditionJson);
-final env = w.sealGated(conditionJson, masterPubHex, network, blobHex);
-// … later, once the federation releases the key …
-final dId  = w.combine(partialsJson, id, fedJson);
-final blob = w.openGated(env, dId);
+final id  = warden.conditionIdentity(conditionJson);
+final env = warden.sealGated(conditionJson, masterPubHex, network, blobHex);
+
+// …later, once the federation has released enough partials for this condition…
+final dId  = warden.combine(partialsJson, id, fedJson);
+final blob = warden.openGated(env, dId);   // == the original blobHex
 ```
 
-Bad input or a wrong-condition key throws `WardenFfiException` (never a crash — the native
-boundary catches panics).
+See [`example/`](example/) for a runnable walk-through, and the Warden repo for the condition
+format, federation setup, and the cross-language test fixtures.
+
+## Platform support
+
+| Platform | Loading |
+|---|---|
+| iOS / macOS | static lib linked into the process (`DynamicLibrary.process()`) |
+| Android | `libwarden_ffi.so` from `jniLibs` |
+| Linux / Windows / desktop & tests | explicit dylib/.so/.dll path |
+
+Native-only (uses `dart:ffi`) — not supported on the web.
 
 ## License
 
-MIT.
+[MIT](LICENSE).

@@ -1,12 +1,16 @@
-// Dart FFI bindings for `warden-ffi` — the native threshold conditional-decryption gate.
-//
-// Mirrors the WASM binding exactly: JSON/hex strings in, `{ok,value|error}` JSON out.
-// The pairing crypto lives once in audited Rust (`warden/ffi`); this only marshals. Every
-// returned C string is freed via `warden_string_free` (see `_take`). Hex is 0x-less.
-//
-// ⚠️ PREVIEW. On an all-ours testnet the *timing* guarantee is zero-security — do not claim
-// "unreadable until the condition triggers". This gate provides condition-binding only;
-// recipient confidentiality (if any) comes from the consuming app's own encryption layer.
+/// Dart FFI bindings for [Warden](https://github.com/bytesbrains/warden) — a threshold
+/// **conditional-decryption** gate.
+///
+/// Seal an already-encrypted blob behind an on-chain condition, then open it once a federation
+/// of independent nodes releases the per-item key. The cryptography lives once in audited Rust;
+/// this library is the thin, safe marshaling layer ([WardenFfi]).
+///
+/// ⚠️ Preview: on a single-operator test federation the *timing* guarantee is not security —
+/// this gate gives condition-binding only.
+library;
+
+// Implementation notes: mirrors the WASM binding exactly (JSON/hex in, `{ok,value|error}` JSON
+// out). Every returned C string is freed via `warden_string_free` (see `_take`). Hex is 0x-less.
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
@@ -39,6 +43,15 @@ class WardenFfiException implements Exception {
 /// Bring your own native library — build it from the `warden/ffi` crate
 /// (`cargo build -p warden-ffi` for a host dylib, or `ffi/build-mobile.sh` for
 /// iOS/Android artifacts) and load it via [WardenFfi.load].
+///
+/// ```dart
+/// final warden = WardenFfi.load(path: 'libwarden_ffi.dylib');
+/// final id  = warden.conditionIdentity(conditionJson);
+/// final env = warden.sealGated(conditionJson, masterPubHex, network, blobHex);
+/// // …once the federation releases enough partials for this condition…
+/// final dId  = warden.combine(partialsJson, id, fedJson);
+/// final blob = warden.openGated(env, dId); // == the original blobHex
+/// ```
 class WardenFfi {
   final _StrFn _identity;
   final _Str4Fn _seal;
