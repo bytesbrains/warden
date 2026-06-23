@@ -37,7 +37,7 @@ envelope   = { alg:"warden-v1", condition, outer, inner }  // see 04-envelope-fo
 ### Autonomous vs client-requested signing
 Two designs (**Phase 0 PoC ships client-requested**; autonomous remains the mainnet target):
 - **Client-requested (simplest):** nodes sign only when asked. Liveness depends partly on a requester existing. Good for testnet. *(`wardend` implements this: `POST /partial` evaluates + signs on demand.)*
-- **Autonomous (more drand-like):** nodes watch `MaktubCore` and proactively produce/store partials when `executed` flips, so a key is ready independent of any requester. Better liveness; more work. **Target for mainnet.**
+- **Autonomous (more drand-like):** nodes watch the condition's contract (e.g. `MaktubCore`) and proactively produce/store partials when it flips, so a key is ready independent of any requester. Better liveness; more work. **Target for mainnet.**
 
 ## 4. Resharing (the permanence mechanism)
 

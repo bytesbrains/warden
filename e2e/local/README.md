@@ -1,22 +1,23 @@
 # Local-devnet Warden harness
 
-Proves the full Veil loop against a **local Hardhat chain** (no testnet funds, no ≥1h wait —
-`evm_increaseTime` skips the timer), with **no changes to the warden/protocol code**. This is
-the "prove Warden works for all conditions locally" gate before wiring Veil into the app.
+Proves the full Warden loop against a **local Hardhat chain** (no testnet funds, no ≥1h wait —
+`evm_increaseTime` skips the timer), with **no changes to the warden code**. This is
+the "prove Warden works for all conditions locally" gate. It drives Maktub's Veil layer as the
+reference consumer, against a deployed Maktub protocol stack.
 
 ## What it verifies (`run.mjs`)
 
-Runs against the **frozen protocol** (deterministic ids D-038, canonical Flash D-039, permissionless backstop D-040). The beat id is `keccak256(sender, salt)`, computed before create — so the condition is sealed to the beat's own id with no counter race.
+Runs against the consumer's **frozen protocol** (deterministic beat ids, canonical Flash state, permissionless backstop). The beat id is `keccak256(sender, salt)`, computed before create — so the condition is sealed to the beat's own id with no counter race.
 
 1. **sealed-before** — payload sealed to `getHeartbeat(beatId).executed==true` is undecryptable while the Beat is active.
-1b. **discovery** — `getInboxBeats(recipient)` surfaces the new beat from canonical state (D-038), so a recipient can find it with no indexer.
+1b. **discovery** — `getInboxBeats(recipient)` surfaces the new beat from canonical state, so a recipient can find it with no indexer.
 2. **readable-after** — `evm_increaseTime` → `execute(beatId)` (staked executor) → once `executed==true`, the node releases, the client combines + opens, and **the payload matches**.
 3. **revocation** — a `deactivate`d Beat is never decryptable.
-4. **backstop** — past `expiry + EXECUTION_GRACE`, an **unstaked** wallet executes and delivery still succeeds — proving liveness is independent of the executor market (D-040, #222).
+4. **backstop** — past `expiry + EXECUTION_GRACE`, an **unstaked** wallet executes and delivery still succeeds — proving liveness is independent of the executor market.
 
 The crypto/threshold mechanics (t-of-n combine, partial verification, AEAD tamper, wrong-key)
 are already covered offline by `warden/cli/tests/cli_flow.rs`; this harness adds the **live
-on-chain integration** — the condition-watcher actually reading `MaktubCore` and gating on it.
+on-chain integration** — the condition-watcher actually reading the consumer's contract (here `MaktubCore`) and gating on it.
 
 ## Run it (host mode — verified working)
 

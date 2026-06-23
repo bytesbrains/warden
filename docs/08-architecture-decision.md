@@ -43,7 +43,7 @@ So the choice between architectures is **not about the gate** (the Base-conditio
 - **Phase 0/1 unchanged:** testnet uses **trusted-dealer shares** (no DKG anyway); mainnet uses drand's audited DKG + resharing (the permanence mechanism).
 - **The Base-condition-watcher + finality policy is built regardless** — it's architecture-independent and remains the genuinely novel, security-critical component.
 - **W1 (silent collusion) stays an accepted-but-bounded risk for gen-1**, with traitor-tracing as the tracked mitigation (not yet production).
-- **Envelope `alg`-versioning is now a hard requirement** so gen-2 (SWE) / gen-3 (WE) swap in without touching Maktub or recipients.
+- **Envelope `alg`-versioning is now a hard requirement** so gen-2 (SWE) / gen-3 (WE) swap in without touching consuming apps or recipients.
 
 ## Open items to verify from full PDFs (ePrint 403-blocked automated fetch)
 1. **STE old-ciphertext survival across operator *departure*** (2024/263) — does the helper-key mechanism keep a years-old ciphertext decryptable when original quorum members leave?

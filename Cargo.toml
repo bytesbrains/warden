@@ -1,11 +1,11 @@
-# Warden workspace (Phase 0 PoC, Maktub issue #181).
+# Warden workspace (Phase 0 PoC).
 #
 # Members:
 #   core   — `warden-core`: condition model, threshold IBE, the warden-v1 double-wrap.
 #   dealer — `warden-dealer`: trusted-dealer ceremony CLI (testnet only; real DKG replaces
 #            it for mainnet). Emits the master public key + per-node share files.
 #
-# The node daemon (`wardend`, WS-C) and client CLI (`warden`, WS-D) slot in here next.
+# The node daemon (`wardend`) and client CLI (`warden`) complete the workspace.
 #
 # Toolchain pinned to 1.83 (`rust-toolchain.toml`); transitive deps are pinned in
 # `core/Cargo.toml` to versions compatible with that channel — see the comments there
@@ -18,7 +18,7 @@ members = ["core", "dealer", "node", "cli", "ffi"]
 # surfaces to Dart as `{"ok":false,...}` instead of aborting the host app. That guard
 # ONLY works while panics unwind — `panic = "abort"` would turn every panic into an
 # immediate process kill, taking the whole iOS/Android app down with it. Keep `unwind`
-# on every profile the mobile libs are built under (CISO invariant, #181 step 5c).
+# on every profile the mobile libs are built under (a build invariant).
 [profile.release]
 panic = "unwind"
 

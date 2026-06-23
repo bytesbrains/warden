@@ -1,6 +1,6 @@
 # warden-cli (`warden`)
 
-The Warden client (Phase 0 PoC, Maktub issue #181 WS-D). Seals payloads into the `warden-v1`
+The Warden client (Phase 0 PoC). Seals payloads into the `warden-v1`
 double-wrap, publishes them to a content-addressed store, and recovers them by polling the
 federation for partials, combining, and opening.
 
@@ -36,10 +36,10 @@ succeeds immediately.
   `warden-core`; this crate is the glue + key management + CID store + node polling.
 - **CID store** (`store/<cid>.json`, `cid = sha256(envelope)`) stands in for IPFS/Arweave; the
   on-chain footprint of a real Beat is just this id. A real backend is a later phase.
-- Recipient keys are secp256k1 (the ECIES recipient gate), aligned with Maktub's registry.
+- Recipient keys are secp256k1 (the ECIES recipient gate); a consuming app can align these with its own recipient registry (e.g. Maktub's).
 
 ## Test
 
 `cargo test -p warden-cli` includes a fully offline end-to-end flow: it deals a federation,
 stands up mock nodes that release partials, and drives `keygen → encrypt → decrypt` through
-the real binary, asserting the payload round-trips. Live-chain release is covered by WS-E.
+the real binary, asserting the payload round-trips. Live-chain release is covered by the e2e harness ([`../e2e/README.md`](../e2e/README.md)).

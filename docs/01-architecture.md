@@ -6,7 +6,7 @@ Warden is a federation of **operator nodes**, each holding a Shamir share of one
 
 ## The double-wrap (why Warden never sees content)
 
-A Veil ciphertext nests two gates over one content key `K`:
+A double-wrapped ciphertext nests two gates over one content key `K` (a Veil ciphertext is one example):
 
 ```
 K         = random symmetric content key
@@ -68,7 +68,7 @@ Key cross-cutting finding: **condition-gating is an app-layer policy in *all thr
 
 Rust core (reasons: safety, mature crypto crates, and **one core → native node + WASM web client + Dart-FFI mobile client**, which closes the mobile gap that disqualified the vendors). Candidate crates: `blstrs`/`arkworks` (BLS12-381 + RFC-9380), `blsful` (threshold BLS, audited), `gennaro-dkg` (DKG, audited), `vsss-rs` (VSS), `ideal-lab5/timelock` (beacon-agnostic IBE timelock — closest architectural fit). All need a security audit before mainnet. Alternative: fork drand (Go) for the node and write Rust clients — faster to a hardened node, weaker mobile story. Decision: **Rust core** (see [07-roadmap](07-roadmap.md)).
 
-## Data flow (Veil beat, happy path)
+## Data flow (worked example — Maktub Veil beat, happy path)
 
 ```
 1. Owner (encrypt):   K=random; inner = AEAD(payload, K); K_wrapped = ECIES(K, recipientPub)

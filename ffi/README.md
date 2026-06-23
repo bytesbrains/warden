@@ -1,11 +1,11 @@
 # warden-ffi
 
-A thin **C-ABI** over `warden-core` for the Flutter app via `dart:ffi` (Veil). Mirrors the
-WASM/SDK boundary exactly, so the pairing crypto lives once in audited Rust and neither the SDK
-(WASM) nor the app (FFI) reimplements it.
+A thin **C-ABI** over `warden-core` for a Flutter consuming app via `dart:ffi` (e.g. Maktub's Veil
+layer). Mirrors the WASM/SDK boundary exactly, so the pairing crypto lives once in Rust and neither
+a WASM nor an FFI consumer reimplements it.
 
-> ⚠️ Not audited. PoC. Veil's *timing* is zero-security on the all-ours testnet — ship "preview",
-> never claim unreadable-until-trigger. Recipient confidentiality is real (the app's hybrid layer).
+> ⚠️ Not audited. PoC. The *timing* guarantee is zero-security on the all-ours testnet — ship "preview",
+> never claim unreadable-until-trigger. Recipient confidentiality stays in the consuming app's hybrid layer.
 
 ## ABI
 
@@ -22,8 +22,8 @@ Every function takes NUL-terminated UTF-8 C strings and returns a malloc'd C str
 | `warden_combine(partialsJson, idHex, fedJson)` | → `d_id` hex (verifies + dedups + tolerates a noisy set) |
 | `warden_string_free(ptr)` | free a returned string |
 
-**No secret-bearing inputs** — no master secret, no recipient private key (the app keeps recipient
-confidentiality in its own hybrid layer; `open_gated` returns the still-host-encrypted blob).
+**No secret-bearing inputs** — no master secret, no recipient private key (the consuming app keeps
+recipient confidentiality in its own hybrid layer; `open_gated` returns the still-host-encrypted blob).
 
 ## Build
 
@@ -42,14 +42,14 @@ The release profile keeps `panic = "unwind"` (see `warden/Cargo.toml`): the boun
 ### Mobile (cross-compile)
 
 One script builds both platforms. Artifacts default to `dist/mobile` inside this repo (git-ignored
-— regenerate from source; CISO: never commit a prebuilt binary). Pass `--out <dir>` to write into a
-consumer's tree (e.g. the Maktub app's `mobile/`) instead:
+— regenerate from source; never commit a prebuilt binary). Pass `--out <dir>` to write into a
+consuming app's mobile tree instead:
 
 ```bash
 ffi/build-mobile.sh ios        # → dist/mobile/ios/WardenFfi.xcframework  (device + simulator)
 ffi/build-mobile.sh android    # → dist/mobile/android/app/src/main/jniLibs/<abi>/libwarden_ffi.so
 ffi/build-mobile.sh all        # both (default)
-ffi/build-mobile.sh all --out /path/to/maktub/mobile   # write straight into a consumer tree
+ffi/build-mobile.sh all --out /path/to/your-app/mobile   # write straight into a consumer tree
 ```
 
 Prereqs: iOS — Xcode + `rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios`
@@ -86,9 +86,8 @@ text symbols (iOS carries the leading-underscore C-ABI form; `process()` resolve
 
 ### Status
 
-The Dart bridge (`mobile/lib/services/crypto/veil/warden_ffi.dart`) and its host test are in the
-tree (#181 step 5b) and pass byte-for-byte against the same fixture as the Rust + WASM paths.
-Cross-compilation to iOS (xcframework) and Android (4-ABI jniLibs) is wired and verified
-(step 5c). **Remaining:** wire the gate into the Beat create/open flow under
-`mobile/lib/services/crypto/` (gate-over-hybrid: the app produces the v2 hybrid envelope, the FFI
-adds the condition gate, the federation poll releases it) — step 5d.
+A consuming app's Dart bridge and its host test pass byte-for-byte against the same fixture as the
+Rust + WASM paths (Maktub's reference bridge lives at `mobile/lib/services/crypto/veil/warden_ffi.dart`).
+Cross-compilation to iOS (xcframework) and Android (4-ABI jniLibs) is wired and verified.
+**Remaining (consumer-side):** wire the gate into the consuming app's create/open flow (gate-over-hybrid:
+the app produces its own hybrid envelope, the FFI adds the condition gate, the federation poll releases it).

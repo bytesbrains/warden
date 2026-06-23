@@ -1,10 +1,11 @@
-# Veil end-to-end harness (Base Sepolia)
+# End-to-end harness (Base Sepolia) — Maktub Veil as the reference consumer
 
-The capstone of Maktub #181 (WS-E): proves the whole Veil loop against **real on-chain
-state** on Base Sepolia, tying together the dealer (WS-B), the node federation (WS-C), and
-the client CLI (WS-D).
+Proves the whole Warden loop against **real on-chain state** on Base Sepolia, tying together the
+dealer, the node federation, and the client CLI. It uses Maktub's Veil delivery layer (a Maktub
+Beat condition) as a concrete reference consumer — any app with an on-chain condition can be
+driven the same way.
 
-It asserts the three properties that *are* Veil:
+It asserts the three properties Warden gives that consumer:
 
 1. **Undecryptable before** — a payload sealed to `getHeartbeat(beatId).executed == true` is
    unreadable while the Beat is active.
@@ -44,7 +45,7 @@ node warden/e2e/veil-e2e.mjs revoke    # deactivate a fresh Beat, asserts NEVER 
 Config via env (defaults target the 2026-06-16 Sepolia stack): `CORE`, `REGISTRY`, `REWARDS`,
 `FEDERATION`, `NODES`, `WARDEN_BIN`, `STORE`, `INTERVAL`, `DECRYPT_TIMEOUT`.
 
-## Finality policy & residual reorg risk (WS-E deliverable)
+## Finality policy & residual reorg risk
 
 Nodes evaluate the condition at the **`finalized`** block tag (`WARDEN_FINALITY_TAG`, default
 `finalized`; the federation-wide floor per [`../docs/03-protocol.md`](../docs/03-protocol.md) §5).
@@ -70,5 +71,5 @@ Residual risk:
 
 The crypto loop (seal → poll → verify → combine → open) is proven **offline** by
 `warden/cli/tests/cli_flow.rs` against mock nodes. This harness adds the **live-chain** proof —
-that `MaktubCore.executed`, read at finality, is what gates release — and inherently needs a
+that an on-chain condition (here `MaktubCore.executed`), read at finality, is what gates release — and inherently needs a
 funded executor key and the ≥1h Beat expiry, so it is run by an operator, not in CI.

@@ -2,13 +2,13 @@
 
 **Warden** is a drand-derived, **event-gated threshold conditional-decryption network**: a federation of independent nodes that hold shares of one master key (via DKG) and release a per-item decryption key **only when an on-chain condition becomes true** (e.g. `MaktubCore.executed(beatId) == true` on Base).
 
-It is the network that powers **Veil** — Maktub's time-bound, revocable, end-to-end-sealed delivery — and is designed as a **standalone public good** that any application needing "decrypt only when this on-chain condition holds" can build on.
+Warden is a **standalone public good**: any application needing "decrypt only when this on-chain condition holds" can build on it. One such consumer is **Veil**, Maktub's time-bound, revocable, end-to-end-sealed delivery layer — Veil seals the letter and uses Warden to keep the key until the trigger condition fires, then release it.
 
-> *"Veil seals the letter; Warden keeps the key until the moment, then releases it."*
+> *"The app seals the letter; Warden keeps the key until the on-chain moment, then releases it."*
 
 ## Status
 
-**Phase 0 PoC — code-complete** (Maktub [#181](https://github.com/nandal/maktub/issues/181)): the crypto core, double-wrap envelope, trusted-dealer CLI, node + condition-watcher, client CLI, and an end-to-end Base Sepolia harness are all built and merged. The crypto loop is proven offline (`cli/tests/cli_flow.rs`); the live-chain demonstration is operator-run (needs a funded staked-executor key + the ≥1h Beat expiry). Next: public testnet, then open-source + audit, then a mainnet federation. See [`docs/07-roadmap.md`](docs/07-roadmap.md). **All-ours testnet = zero security by design; do not use for real secrets.**
+**Phase 0 PoC — code-complete**: the crypto core, double-wrap envelope, trusted-dealer CLI, node + condition-watcher, client CLI, and an end-to-end Base Sepolia harness are all built and merged. The crypto loop is proven offline (`cli/tests/cli_flow.rs`); the live-chain demonstration is operator-run (needs a funded staked-executor key + the ≥1h Beat expiry). Next: public testnet, then open-source + audit, then a mainnet federation. See [`docs/07-roadmap.md`](docs/07-roadmap.md). **All-ours testnet = zero security by design; do not use for real secrets.**
 
 ## What it is / is not
 
@@ -25,9 +25,9 @@ A Cargo workspace (`Cargo.toml`) plus the specs. Toolchain pinned to Rust 1.83 (
 | `dealer/` | `warden-dealer` crate — trusted-dealer ceremony CLI (testnet only; real DKG for mainnet) |
 | `node/` | `warden-node` crate (`wardend`) — node daemon: condition-watcher + threshold partial release over HTTP |
 | `cli/` | `warden-cli` crate (`warden`) — client: keygen, encrypt (double-wrap → CID), decrypt (poll → combine → open) |
-| `ffi/` | `warden-ffi` — C-ABI over core for Flutter/`dart:ffi` (Veil); cdylib/staticlib for Android/iOS |
-| `wasm/` | `warden-wasm` — wasm-bindgen bindings over core for the TS SDK (Veil); standalone workspace, compiles to `wasm32` |
-| `e2e/` | Veil end-to-end harness — drives the live Base Sepolia loop (create → seal → execute → decrypt → deactivate); finality/reorg notes in [`e2e/README.md`](e2e/README.md) |
+| `ffi/` | `warden-ffi` — C-ABI over core for Flutter/`dart:ffi` consumers; cdylib/staticlib for Android/iOS |
+| `wasm/` | `warden-wasm` — wasm-bindgen bindings over core for TS/JS consumers; standalone workspace, compiles to `wasm32` |
+| `e2e/` | End-to-end harness — drives the live Base Sepolia loop (create → seal → execute → decrypt → deactivate); finality/reorg notes in [`e2e/README.md`](e2e/README.md) |
 | `Dockerfile`, `docker-compose.yml` | Build `wardend`; bring up a 3-node PoC federation |
 | `docs/00-overview.md` | What Warden is, goals, non-goals |
 | `docs/01-architecture.md` | System architecture; drand reuse/replace |
@@ -59,19 +59,19 @@ docker compose up --build
 
 `wardend` (the node) and `warden` (the client) are the two binaries; see [`docs/06-operator-manual.md`](docs/06-operator-manual.md) to run a node and [`cli/`](cli) for the client flow. **All-ours testnet = zero security by design; do not use for real secrets.**
 
-### Consumers (Veil)
+### Client bindings (for consuming apps)
 
-Two build targets produce the artifacts Maktub's **Veil** layer embeds:
+Two build targets produce the artifacts a consuming app embeds (Maktub's **Veil** layer is one such consumer):
 
-- `wasm/` → `wasm-pack build` → npm package consumed by the Maktub TS SDK.
-- `ffi/` → `ffi/build-mobile.sh` → iOS `xcframework` + Android `jniLibs` consumed by the Maktub app.
+- `wasm/` → `wasm-pack build` → npm package for a TypeScript/JavaScript SDK.
+- `ffi/` → `ffi/build-mobile.sh` → iOS `xcframework` + Android `jniLibs` for a mobile app.
 
-> **Note (post-split):** `ffi/build-mobile.sh` defaults its output to `dist/mobile` inside this repo (git-ignored) and accepts `--out <dir>` to write straight into a consumer's tree (e.g. `--out /path/to/maktub/mobile`) — no monorepo-path assumption. A published-artifact pipeline is still tracked in the issue tracker.
+> **Note:** `ffi/build-mobile.sh` defaults its output to `dist/mobile` inside this repo (git-ignored) and accepts `--out <dir>` to write straight into a consumer's tree (e.g. `--out /path/to/your-app/mobile`) — no monorepo-path assumption. A published-artifact pipeline is still on the roadmap.
 
-## Relationship to Maktub
+## Standalone by design
 
-Warden is the network beneath **Veil**, but is intentionally **standalone**: any application needing "decrypt only when this on-chain condition holds" can build on it. Origin and diligence are tracked in the Maktub repo under the `warden` label — decision/exploration **#177**, Veil spec **#178**, key-network diligence **#179**.
+Warden is intentionally **standalone**: any application needing "decrypt only when this on-chain condition holds" can build on it. It originated as the network beneath Maktub's **Veil** delivery layer, and Veil remains a reference consumer, but Warden is a general-purpose primitive — nothing in the core ties it to a single application.
 
 ## License
 
-License target: **MIT** — consistent with the Maktub protocol/SDK, and chosen so Warden can serve as a public-good network anyone can run. *(LICENSE file pending — copyright holder/entity to be confirmed.)*
+License target: **MIT** — chosen so Warden can serve as a public-good network anyone can run. *(LICENSE file pending — copyright holder/entity to be confirmed.)*

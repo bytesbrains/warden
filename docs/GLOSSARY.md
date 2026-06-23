@@ -1,7 +1,7 @@
 # Glossary
 
 - **Warden** — the event-gated threshold conditional-decryption network (this project).
-- **Veil** — Maktub's capability that Warden powers: time-bound, revocable, end-to-end-sealed delivery.
+- **Veil** — a reference consumer of Warden: Maktub's time-bound, revocable, end-to-end-sealed delivery capability, built on Warden.
 - **DKG (Distributed Key Generation)** — protocol where `n` parties jointly create a keypair: everyone agrees on one **master public key**, each holds a **share** of the private key, and the full private key is **never assembled**. (Pedersen/Feldman VSS.)
 - **Trusted-dealer setup** — testnet shortcut: one script makes the master key and Shamir-splits it into shares. The full key briefly exists in the dealer. Not for mainnet.
 - **Threshold BLS** — BLS signatures over BLS12-381 split `t`-of-`n`: any `t` partial signatures combine (Lagrange) into the full signature; fewer learn nothing. The release primitive.

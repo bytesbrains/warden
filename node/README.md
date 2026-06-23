@@ -1,6 +1,6 @@
 # warden-node (`wardend`)
 
-A **Warden node** (Phase 0 PoC, Maktub issue #181 WS-C). Holds **one** share of the
+A **Warden node** (Phase 0 PoC). Holds **one** share of the
 federation master key and releases its threshold-BLS **partial** for a condition's identity
 **iff** the condition holds against **finalized** Base Sepolia state. It never sees plaintext
 and never holds the master key — it only ever releases *timing*.
@@ -42,10 +42,11 @@ The novel piece is the **condition-watcher + finality policy** (`src/eval.rs`):
 | `WARDEN_CHAIN_ID` | no | `84532` | Chain this node watches. |
 | `WARDEN_FINALITY_TAG` | no | `finalized` | `finalized` \| `safe` \| `latest` (only `finalized` is reorg-safe). |
 
-## The Veil condition (`executed`)
+## Example consumer condition: Maktub Veil (`executed`)
 
-`MaktubCore` exposes no `executed(uint256)` getter; execution status is the 8th field of
-`getHeartbeat(uint256)`'s return tuple. So the Veil release condition reads return **word 7**:
+A worked example of a real consumer condition. `MaktubCore` exposes no `executed(uint256)`
+getter; execution status is the 8th field of `getHeartbeat(uint256)`'s return tuple. So this
+release condition reads return **word 7**:
 
 ```json
 {

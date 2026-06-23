@@ -5,14 +5,14 @@ Build private through testnet, **open-source before partners/mainnet** (openness
 ## Phase 0.5 — Architecture spike — ✅ DONE → [08-architecture-decision](08-architecture-decision.md)
 **Outcome:** **Gen-1 = DKG threshold-IBE (tlock-derived)** — the only audited, production-mature option; the challengers (silent-setup, SWE) are GGM/iO/trusted-CRS + unaudited PoC, unsafe for seed-phrase secrets today. **Condition-gating is app-layer in all three**, so the choice was made on maturity + longevity. Roadmap: SWE = gen-2 (longevity-optimal), traitor-tracing = a layer to close W1 when production-ready, witness-encryption = gen-3 — all via the `alg` envelope. **Re-run this spike semi-annually.**
 
-## Phase 0 — PoC — ✅ CODE-COMPLETE (#181)
+## Phase 0 — PoC — ✅ CODE-COMPLETE
 **Goal:** prove the whole loop end-to-end, locally, on the gen-1 (DKG-IBE) architecture with trusted-dealer shares. **All workstreams merged** (`warden/core`, `dealer`, `node`, `cli`, `e2e/`).
-- Rust core: BF-IBE encrypt/decrypt + threshold-BLS partial/combine + the `warden-v1` double-wrap (on `arkworks` BLS12-381). [#182, #186]
-- **Trusted-dealer** key setup (skip DKG) + federation file format; 3 nodes via `docker-compose`. [#200]
-- Condition evaluator (`wardend`): reads the Beat's `executed` flag on **Base Sepolia** at the `finalized` tag. Note: `MaktubCore` exposes no `executed(uint256)` getter — status is field 7 of `getHeartbeat(uint256)`, so the condition uses `word: 7` (see [02-condition-model](02-condition-model.md)). [#201]
-- CLI client (`warden`): double-wrap encrypt → publish CID → fetch partials → combine → decrypt, retry-until-released. [#202]
-- E2E harness (`warden/e2e/`): create+execute a Beat → assert sealed-then-readable → deactivate → assert never. [#203]
-- **Exit:** a sealed payload is unreadable before `executed`, readable after, on real Sepolia state. *Crypto loop proven offline (`cli/tests/cli_flow.rs`); the live Sepolia run is operator-driven (funded staked-executor key + ≥1h Beat expiry).*
+- Rust core: BF-IBE encrypt/decrypt + threshold-BLS partial/combine + the `warden-v1` double-wrap (on `arkworks` BLS12-381).
+- **Trusted-dealer** key setup (skip DKG) + federation file format; 3 nodes via `docker-compose`.
+- Condition evaluator (`wardend`): reads an on-chain condition on **Base Sepolia** at the `finalized` tag. The reference-consumer (Maktub Veil) example: `MaktubCore` exposes no `executed(uint256)` getter — status is field 7 of `getHeartbeat(uint256)`, so the condition uses `word: 7` (see [02-condition-model](02-condition-model.md)).
+- CLI client (`warden`): double-wrap encrypt → publish CID → fetch partials → combine → decrypt, retry-until-released.
+- E2E harness (`warden/e2e/`): against the reference consumer, create+execute a Beat → assert sealed-then-readable → deactivate → assert never.
+- **Exit:** a sealed payload is unreadable before the condition holds, readable after, on real Sepolia state. *Crypto loop proven offline (`cli/tests/cli_flow.rs`); the live Sepolia run is operator-driven (funded staked-executor key + ≥1h Beat expiry).*
 
 ## Phase 1 — Testnet federation (a few weeks)
 **Goal:** a faithful distributed testnet.
@@ -21,7 +21,7 @@ Build private through testnet, **open-source before partners/mainnet** (openness
 - TS SDK (WASM) client; begin Dart-FFI client.
 - `re-wrap-on-check-in` flow; autonomous-vs-requested signing decided here.
 - **Honest disclosure:** all-ours = **zero security**; testnet only, no real secrets.
-- **Exit:** Maktub mobile/web can create and open a Veil beat on testnet.
+- **Exit:** a consuming app can create and open a sealed item on testnet (e.g. Maktub mobile/web opening a Veil beat).
 
 ## Phase 2 — Open-source + audit (gate before mainnet)
 - **Publish the source (MIT).** (The *spec* — this `docs/` — is public from day one; the implementation opens here.)
@@ -34,7 +34,7 @@ Build private through testnet, **open-source before partners/mainnet** (openness
 - Real **DKG** ceremony (no dealer); resharing tested.
 - Dart-FFI mobile client production-ready.
 - Multi-network redundancy plan (k-of-N across independent Warden generations/networks) + permanence governance.
-- **Exit:** Veil live on Maktub mainnet, honestly described.
+- **Exit:** a production consumer live on mainnet (e.g. Maktub's Veil), honestly described.
 
 ## Phase 4 — Public good / adoption
 - Generalized condition tiers (cross-chain, events, eventually Tier-2 oracle).

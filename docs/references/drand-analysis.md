@@ -2,7 +2,7 @@
 
 > **Fetched + analyzed 2026-06-17.** Targets **drand v2+**; v1→v2 deltas flagged inline. Every claim is URL-cited. Version-dependent or unconfirmed points (the G1 DST literal, the live League-of-Entropy threshold `t`, gossipsub-relay v2 status, exact tlock-js API drift) are flagged at their point of use. This document is the basis for Warden's reuse/replace decisions — see [`../01-architecture.md`](../01-architecture.md) and [`../03-protocol.md`](../03-protocol.md).
 
-This tells us exactly what to **reuse** from drand and what to **replace** to build a threshold-IBE network that releases a decryption key when an on-chain condition (`MaktubCore.executed(beatId) == true` on Base) holds, instead of when a time/round is reached. §§1–7 are sourced reference; §§8–9 are the load-bearing analysis; the final summary is the decision list.
+This tells us exactly what to **reuse** from drand and what to **replace** to build a threshold-IBE network that releases a decryption key when an on-chain condition (e.g. `MaktubCore.executed(beatId) == true` on Base) holds, instead of when a time/round is reached. §§1–7 are sourced reference; §§8–9 are the load-bearing analysis; the final summary is the decision list.
 
 ---
 
@@ -69,7 +69,7 @@ A BLS sig on `m` is `msk·H(m)`; the BF-IBE key for `id` is `msk·H1(id)`. If `i
 
 **Envelope/APIs:** hybrid — message age-encrypted (ChaCha20-Poly1305); tlock timelocks the file key as an **age stanza** `-> tlock {round} {chainHash}`. Go `github.com/drand/tlock` (`Encrypt(dst,src,round)` / `Decrypt`, `ErrTooEarly`); TS `tlock-js` (`timelockEncrypt/Decrypt`). Rust: `thibmeu/tlock-rs`, `ideal-lab5/timelock`. *Stated horizon ≥5 yrs; not quantum-resistant.*
 
-**Transforming tlock TIME→EVENT (the core analysis).** *Stays identical:* the entire IBE/pairing/threshold/age layer — condition-agnostic, **reuse verbatim**. *Changes:* (1) **identity round → `H(condition)`** (domain-separated `H(chainId ‖ contract ‖ beatId ‖ "executed")`; mathematically free, preserves predictability); (2) **release: time-elapse → on-chain boolean** — each node signs `H1(condition)` **iff** it verifies `executed(beatId)==true` on Base (the only substantive new component — a per-signer **condition oracle**); (3) **domain-separation against replay/grinding** (identities now attacker-influenceable); (4) **nothing on-chain changes** — `MaktubCore` stays immutable, merely exposing `executed`.
+**Transforming tlock TIME→EVENT (the core analysis).** *Stays identical:* the entire IBE/pairing/threshold/age layer — condition-agnostic, **reuse verbatim**. *Changes:* (1) **identity round → `H(condition)`** (domain-separated `H(chainId ‖ contract ‖ beatId ‖ "executed")`; mathematically free, preserves predictability); (2) **release: time-elapse → on-chain boolean** — each node signs `H1(condition)` **iff** it verifies the condition on Base (e.g. `executed(beatId)==true` for a Maktub Beat — the only substantive new component, a per-signer **condition oracle**); (3) **domain-separation against replay/grinding** (identities now attacker-influenceable); (4) **nothing on-chain changes** — the consumer's contract (e.g. `MaktubCore`) stays immutable, merely exposing the gated state.
 
 ## 6. APIs
 
@@ -101,7 +101,7 @@ A BLS sig on `m` is `msk·H(m)`; the BF-IBE key for `id` is `msk·H1(id)`. If `i
 ## What this means for Warden (decision list)
 
 - **Reuse the whole IBE/threshold-BLS/DKG/reshare stack** — math is condition-agnostic; only the *identity string* and the *release gate* change.
-- **Swap the gate, not the cryptography:** identity `H(round)` → `H(chainId ‖ MaktubCore ‖ beatId ‖ "executed")`; trigger "time ≥ R" → "`executed(beatId)==true`, per-signer verified." The only fundamentally new component.
+- **Swap the gate, not the cryptography:** identity `H(round)` → `H(chainId ‖ contract ‖ condition)` (e.g. `H(chainId ‖ MaktubCore ‖ beatId ‖ "executed")` for a Maktub Beat); trigger "time ≥ R" → "the condition holds, per-signer verified" (e.g. `executed(beatId)==true`). The only fundamentally new component.
 - **Keep resharing** — it gives permanence-with-churn (master public key survives turnover). Core, not optional.
 - **Replace the round scheduler with a Base condition-watcher + finality policy**; reorg-after-release is an irreversible leak — choose confirmations conservatively.
 - **Move to on-demand / autonomous condition-keyed release**; decide autonomous-watch (better liveness) vs client-requested.
@@ -111,5 +111,5 @@ A BLS sig on `m` is `msk·H(m)`; the BF-IBE key for `id` is `msk·H1(id)`. If `i
 ### Riskiest unknowns
 1. **Finality/reorg policy for the Base read** — no drand precedent; highest-stakes new decision.
 2. **On-demand orchestration & liveness** — who triggers signing; guaranteeing a met condition's key gets released and stays released forever.
-3. **Long-horizon key security** — non-PQ + immutable master key ⇒ one eventual `msk` break exposes decades of dormant ciphertexts; consider a new-generation migration story (opt-in re-encryption, mirroring Maktub's immutable-V2 pattern).
+3. **Long-horizon key security** — non-PQ + immutable master key ⇒ one eventual `msk` break exposes decades of dormant ciphertexts; consider a new-generation migration story (opt-in re-encryption, e.g. an immutable-V2-style pattern).
 4. **Identity domain-separation** — wrong `H1` binding enables cross-item key reuse / grinding.

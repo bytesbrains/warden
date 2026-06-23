@@ -12,7 +12,7 @@ identity = H( "warden-cond-v1" ‖ jcs_rfc8785(condition) )
 
 A node, asked for its partial on `identity`, is given the condition `C` (public metadata in the envelope), checks `H(C) == identity`, **independently evaluates `C` against finalized chain state**, and returns its partial **iff `C` holds**. This **binds the condition cryptographically to the ciphertext** — conditions cannot be swapped after encryption.
 
-> The condition is **public** (it is metadata, not secret). For Veil it reveals `beatId` + that it gates on `executed` — already public on-chain. No new leakage.
+> The condition is **public** (it is metadata, not secret). For a Veil-style consumer it reveals `beatId` + that it gates on `executed` — already public on-chain. No new leakage.
 
 ## Condition schema (`cond-v1`)
 
@@ -38,9 +38,9 @@ A node, asked for its partial on `identity`, is given the condition `C` (public 
 }
 ```
 
-The Veil release condition for a real Maktub Beat — `MaktubCore` has **no `executed(uint256)`
-getter**; execution status is the 8th field (index 7) of `getHeartbeat(uint256)`'s return
-tuple, so `word` selects it:
+A worked consumer example — the release condition for a real Maktub Beat (Veil). `MaktubCore`
+has **no `executed(uint256)` getter**; execution status is the 8th field (index 7) of
+`getHeartbeat(uint256)`'s return tuple, so `word` selects it:
 
 ```json
 {
@@ -70,11 +70,11 @@ Unlike drand round numbers (globally unique by construction), condition-derived 
 
 ## Revocability is the app's responsibility
 
-Warden only *evaluates* conditions. **Revocation** = the app constructs a condition that can be made **permanently unsatisfiable**. Maktub does this: `deactivate(beatId)` means `executed(beatId)` can never become true → Warden never releases → permanent gibberish. Apps wanting revocability must design conditions with this property.
+Warden only *evaluates* conditions. **Revocation** = the app constructs a condition that can be made **permanently unsatisfiable**. Maktub's Veil does this: `deactivate(beatId)` means `executed(beatId)` can never become true → Warden never releases → permanent gibberish. Apps wanting revocability must design conditions with this property.
 
 ## Trust tiers
 
-- **Tier 1 — on-chain state** (`contract` / `block` / `event`, finalized): deterministic, strong. **Ship this for Veil and v1.**
+- **Tier 1 — on-chain state** (`contract` / `block` / `event`, finalized): deterministic, strong. **Ship this for v1** (and the Veil consumer).
 - **Tier 2 — external data** (oracle values, JSON/REST conditions): adds a **data-source trust + determinism risk**. **Opt-in, later phase.** Operators *declare* which tiers they evaluate; clients see the tier and decide.
 
 ## Use cases unlocked
@@ -91,6 +91,6 @@ Warden only *evaluates* conditions. **Revocation** = the app constructs a condit
 
 ## Phasing
 
-- **v1 (Veil MVP):** Tier-1 `contract` + `block` + `all/any/not`.
+- **v1 (MVP, e.g. the Veil consumer):** Tier-1 `contract` + `block` + `all/any/not`.
 - **v1.x:** cross-chain hardening, `event` type, `threshold` (k-of-N) compound.
 - **v2:** Tier-2 (oracle/API), opt-in, separately tiered.

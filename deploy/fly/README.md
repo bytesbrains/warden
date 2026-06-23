@@ -6,7 +6,7 @@ topology (distinct operators/endpoints, isolated shares) and a clean hand-off: a
 later runs the **same image** on their own fly account or VM with their share.
 
 > ⚠️ **Testnet only — zero timing-security.** An all-ours federation cannot provide the timing
-> guarantee (D-036): whoever runs ≥ `t` nodes can release early. Real security requires the N
+> guarantee: whoever runs ≥ `t` nodes can release early. Real security requires the N
 > nodes to be **independent institutions**. This setup is about ops faithfulness + hand-off, not
 > trust. Content confidentiality (the recipient's key) is unaffected and remains real.
 
@@ -14,7 +14,7 @@ later runs the **same image** on their own fly account or VM with their share.
 Each node holds **one** share; co-locating all shares on one machine makes a single compromise a
 total key compromise and defeats the threshold even for testing. Separate apps isolate the
 shares, exercise the real cross-node topology, and let you drop in a real operator per node
-without re-architecting. (See the deploy discussion; D-036.)
+without re-architecting.
 
 ## One-time per release
 
