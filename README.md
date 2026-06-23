@@ -1,5 +1,7 @@
 # Warden
 
+Site: [warden.bytesbrains.com](https://warden.bytesbrains.com)
+
 **Warden** is a drand-derived, **event-gated threshold conditional-decryption network**: a federation of independent nodes that hold shares of one master key (via DKG) and release a per-item decryption key **only when an on-chain condition becomes true** (e.g. `MaktubCore.executed(beatId) == true` on Base).
 
 Warden is a **standalone public good**: any application needing "decrypt only when this on-chain condition holds" can build on it. One such consumer is **Veil**, Maktub's time-bound, revocable, end-to-end-sealed delivery layer — Veil seals the letter and uses Warden to keep the key until the trigger condition fires, then release it.
@@ -74,4 +76,4 @@ Warden is intentionally **standalone**: any application needing "decrypt only wh
 
 ## License
 
-License target: **MIT** — chosen so Warden can serve as a public-good network anyone can run. *(LICENSE file pending — copyright holder/entity to be confirmed.)*
+**MIT** — see [`LICENSE`](LICENSE). Chosen so Warden can serve as a public-good network anyone can run.

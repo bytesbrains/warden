@@ -12,3 +12,9 @@
 /e2e/local/store/
 /e2e/local/fed/
 /e2e/local/_state/
+
+# Operator-local / never published (insurance — none are tracked today).
+/.claude/
+/internal/
+/legacy/
+.DS_Store
