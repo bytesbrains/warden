@@ -1,0 +1,76 @@
+// warden_ffi_flutter — Android native delivery for the Warden Veil bridge.
+//
+// The native .so files are NOT vendored in the published package. This downloads the
+// prebuilt jniLibs from the matching warden GitHub release into the build dir and adds
+// them as a jniLibs source set, so Gradle bundles libwarden_ffi.so per ABI into the APK.
+// DynamicLibrary.open('libwarden_ffi.so') then resolves it at runtime.
+
+group 'com.bytesbrains.warden_ffi_flutter'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+// The warden release whose binaries this version pulls. Keep in lockstep with the tag
+// the ios/warden_ffi_flutter.podspec downloads (warden_tag).
+def WARDEN_NATIVE_TAG = 'v0.1.0-dev.2'
+def wardenJni = new File(buildDir, "warden_native")
+
+// Download + unpack the prebuilt jniLibs once (the zip contains jniLibs/<abi>/...).
+task downloadWardenJni {
+    outputs.dir wardenJni
+    doLast {
+        def marker = new File(wardenJni, "jniLibs/arm64-v8a/libwarden_ffi.so")
+        if (!marker.exists()) {
+            wardenJni.mkdirs()
+            def zip = new File(buildDir, "warden-ffi-android-jniLibs.zip")
+            def url = "https://github.com/bytesbrains/warden/releases/download/${WARDEN_NATIVE_TAG}/warden-ffi-android-jniLibs.zip"
+            logger.lifecycle("warden_ffi_flutter: downloading ${url}")
+            new URL(url).withInputStream { i -> zip.withOutputStream { o -> o << i } }
+            copy {
+                from zipTree(zip)
+                into wardenJni
+            }
+            zip.delete()
+        }
+    }
+}
+
+android {
+    namespace 'com.bytesbrains.warden_ffi_flutter'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+    }
+
+    // The zip unpacks to <wardenJni>/jniLibs/<abi>/libwarden_ffi.so.
+    sourceSets {
+        main {
+            jniLibs.srcDirs += ["${wardenJni}/jniLibs"]
+        }
+    }
+}
+
+// Ensure the libs are present before the library is assembled.
+tasks.configureEach { task ->
+    if (task.name == 'preBuild') {
+        task.dependsOn downloadWardenJni
+    }
+}

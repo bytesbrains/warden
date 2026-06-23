@@ -35,13 +35,13 @@ set -euo pipefail
 WARDEN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LIB="libwarden_ffi"
 
-usage() { echo "usage: $0 [ios|android|all] [--out <dir>]" >&2; }
+usage() { echo "usage: $0 [ios|ios-framework|android|all] [--out <dir>]" >&2; }
 
 WHAT=""
 OUT_DIR=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    ios|android|all) WHAT="$1"; shift ;;
+    ios|ios-framework|android|all) WHAT="$1"; shift ;;
     --out)           [ $# -ge 2 ] || { echo "--out requires a directory" >&2; usage; exit 2; }
                      OUT_DIR="$2"; shift 2 ;;
     --out=*)         OUT_DIR="${1#*=}"; shift ;;
@@ -82,6 +82,66 @@ build_ios() {
   echo "==> iOS: done. Wire it once into ios/Runner per warden/ffi/README.md (§ Mobile → iOS)."
 }
 
+# Wrap a single dylib slice (device, or universal-simulator) in a .framework bundle.
+# The dynamic-framework form is what the warden_ffi_flutter plugin ships: CocoaPods embeds
+# + signs it, so dyld loads it at app launch and the warden_* symbols resolve via
+# DynamicLibrary.process() with NO -force_load wiring on the consumer.
+make_framework() {
+  local dylib="$1" fwdir="$2" minos="$3"
+  rm -rf "$fwdir"; mkdir -p "$fwdir"
+  cp "$dylib" "$fwdir/WardenFfi"
+  # dyld locates the binary by its framework-relative @rpath install name.
+  install_name_tool -id @rpath/WardenFfi.framework/WardenFfi "$fwdir/WardenFfi"
+  cat > "$fwdir/Info.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key><string>WardenFfi</string>
+  <key>CFBundleIdentifier</key><string>com.bytesbrains.WardenFfi</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+  <key>CFBundleName</key><string>WardenFfi</string>
+  <key>CFBundlePackageType</key><string>FMWK</string>
+  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>MinimumOSVersion</key><string>$minos</string>
+</dict>
+</plist>
+PLIST
+}
+
+build_ios_framework() {
+  echo "==> iOS (dynamic): cross-compiling $LIB cdylib (device + simulator arm64+x86_64, release, --locked)"
+  ( cd "$WARDEN_DIR" \
+      && cargo build --locked -p warden-ffi --release --target aarch64-apple-ios \
+      && cargo build --locked -p warden-ffi --release --target aarch64-apple-ios-sim \
+      && cargo build --locked -p warden-ffi --release --target x86_64-apple-ios )
+
+  local work="$WARDEN_DIR/target/ios-framework"
+  rm -rf "$work"; mkdir -p "$work/device" "$work/sim"
+
+  # Device: the lone arm64 dylib. Xcode reads the Mach-O platform, so create-xcframework
+  # files this under the ios-arm64 slice automatically.
+  make_framework "$WARDEN_DIR/target/aarch64-apple-ios/release/$LIB.dylib" \
+                 "$work/device/WardenFfi.framework" "12.0"
+  # Simulator: fuse arm64 + x86_64 so it links on both Apple-Silicon and Intel hosts.
+  lipo -create \
+    "$WARDEN_DIR/target/aarch64-apple-ios-sim/release/$LIB.dylib" \
+    "$WARDEN_DIR/target/x86_64-apple-ios/release/$LIB.dylib" \
+    -output "$work/sim-universal.dylib"
+  make_framework "$work/sim-universal.dylib" "$work/sim/WardenFfi.framework" "12.0"
+
+  local out="$MOBILE_DIR/ios/WardenFfi.xcframework"
+  echo "==> iOS: assembling dynamic $out (ios-arm64 device + universal simulator)"
+  mkdir -p "$(dirname "$out")"   # the --out base may not pre-exist (e.g. default dist/mobile)
+  rm -rf "$out"
+  xcodebuild -create-xcframework \
+    -framework "$work/device/WardenFfi.framework" \
+    -framework "$work/sim/WardenFfi.framework" \
+    -output "$out"
+  echo "==> iOS: done (dynamic framework — CocoaPods embeds it; symbols load at launch, no -force_load)."
+}
+
 build_android() {
   echo "==> Android: cross-compiling $LIB (4 ABIs, release, --locked) via cargo-ndk"
   local jni="$MOBILE_DIR/android/app/src/main/jniLibs"
@@ -92,7 +152,8 @@ build_android() {
 }
 
 case "$WHAT" in
-  ios)     build_ios ;;
-  android) build_android ;;
-  all)     build_ios; build_android ;;
+  ios)           build_ios ;;            # static .a + -force_load (legacy / manual wiring)
+  ios-framework) build_ios_framework ;;  # dynamic framework (warden_ffi_flutter plugin)
+  android)       build_android ;;
+  all)           build_ios; build_android ;;
 esac
