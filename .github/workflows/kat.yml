@@ -1,0 +1,94 @@
+# Cross-language Known-Answer-Test gate for the warden-v1 envelope (#90 / #184).
+#
+# The condition identity = SHA-256("warden-cond-v1" ‖ jcs(condition)) and the warden-gate-v1
+# seal/open must be computed BYTE-FOR-BYTE identically by every port — Rust (core), the C-ABI
+# (ffi, what Dart calls), and WASM (what the TS SDK calls). If any port drifts, a payload sealed
+# by one and a condition evaluated by another never line up and nothing decrypts. This workflow
+# fails the build the moment any port stops matching the canonical fixture.
+#
+# Tests already live in-tree; this just gates them in CI:
+#   - core/tests/vectors.rs        — canonical bytes + 32-byte identity KATs
+#   - ffi/tests/ffi_roundtrip.rs   — drives the C-ABI against wasm/test/fixture.json
+#   - wasm/test/round_trip.cjs     — validates WASM against the same fixture + committed identity
+#   - core/examples/veil_fixture.rs — the deterministic generator of that fixture
+name: kat
+
+on:
+  pull_request:
+    paths:
+      - 'core/**'
+      - 'ffi/**'
+      - 'wasm/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/kat.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'core/**'
+      - 'ffi/**'
+      - 'wasm/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/kat.yml'
+
+concurrency:
+  group: kat-${{ github.ref }}
+  cancel-in-progress: true
+
+# rust-toolchain.toml pins the channel (1.83.0); the action installs it (+ the wasm target for
+# the wasm job). Runs are --locked so CI uses the audited Cargo.lock set.
+jobs:
+  rust-kat:
+    name: Rust core + FFI KAT (and fixture drift guard)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+      - uses: Swatinem/rust-cache@v2
+
+      - name: core identity/canonical KATs + FFI cross-language fixture
+        run: cargo test --locked -p warden-core -p warden-ffi
+
+      - name: drift guard — committed fixture must match warden-core regeneration
+        # Regenerate the canonical fixture from warden-core and fail if the committed copy
+        # differs: a crypto/condition change that is not reflected in wasm/test/fixture.json
+        # (which the WASM and FFI ports validate against) is exactly the silent drift we gate.
+        run: |
+          cargo run --locked -q -p warden-core --example veil_fixture > wasm/test/fixture.json
+          if ! git diff --quiet -- wasm/test/fixture.json; then
+            echo "::error file=wasm/test/fixture.json::Stale fixture. Regenerate with: cargo run -p warden-core --example veil_fixture > wasm/test/fixture.json"
+            git diff -- wasm/test/fixture.json | head -60
+            exit 1
+          fi
+          echo "wasm/test/fixture.json is in sync with warden-core"
+
+  wasm-kat:
+    name: WASM round-trip KAT
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: wasm
+      # Prebuilt wasm-pack binary — no edition2024 tooling build, so the pinned 1.83 channel
+      # compiles the crate fine (the crate's wasm32 build is verified under 1.83).
+      - uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 'latest'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: build warden-wasm (nodejs target)
+        working-directory: wasm
+        run: wasm-pack build --target nodejs --out-dir pkg --release
+
+      - name: node round-trip vs the Rust fixture + committed identity
+        working-directory: wasm
+        run: node test/round_trip.cjs
