@@ -12,7 +12,7 @@ Build private through testnet, **open-source before partners/mainnet** (openness
 - Condition evaluator (`wardend`): reads an on-chain condition on **Base Sepolia** at the `finalized` tag. The reference-consumer (Maktub Veil) example: `MaktubCore` exposes no `executed(uint256)` getter — status is field 7 of `getHeartbeat(uint256)`, so the condition uses `word: 7` (see [02-condition-model](02-condition-model.md)).
 - CLI client (`warden`): double-wrap encrypt → publish CID → fetch partials → combine → decrypt, retry-until-released.
 - E2E harness (`warden/e2e/`): against the reference consumer, create+execute a Beat → assert sealed-then-readable → deactivate → assert never.
-- **Exit:** a sealed payload is unreadable before the condition holds, readable after, on real Sepolia state. *Crypto loop proven offline (`cli/tests/cli_flow.rs`); the live Sepolia run is operator-driven (funded staked-executor key + ≥1h Beat expiry).*
+- **Exit:** a sealed payload is unreadable before the condition holds, readable after, on real Sepolia state. *Crypto loop proven offline (`cli/tests/cli_flow.rs`); the full loop has been run end-to-end on live Base Sepolia.*
 
 ## Phase 1 — Testnet federation (a few weeks)
 **Goal:** a faithful distributed testnet.

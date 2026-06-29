@@ -10,7 +10,7 @@ Warden is a **standalone public good**: any application needing "decrypt only wh
 
 ## Status
 
-**Phase 0 PoC — code-complete**: the crypto core, double-wrap envelope, trusted-dealer CLI, node + condition-watcher, client CLI, and an end-to-end Base Sepolia harness are all built and merged. The crypto loop is proven offline (`cli/tests/cli_flow.rs`); the live-chain demonstration is operator-run (needs a funded staked-executor key + the ≥1h Beat expiry). Next: public testnet, then open-source + audit, then a mainnet federation. See [`docs/07-roadmap.md`](docs/07-roadmap.md). **All-ours testnet = zero security by design; do not use for real secrets.**
+**Phase 0 PoC — code-complete**: the crypto core, double-wrap envelope, trusted-dealer CLI, node + condition-watcher, client CLI, and an end-to-end Base Sepolia harness are all built and merged. The crypto loop is proven offline (`cli/tests/cli_flow.rs`) and the full loop has been run end-to-end on live Base Sepolia. Next: public testnet, then open-source + audit, then a mainnet federation. See [`docs/07-roadmap.md`](docs/07-roadmap.md). **All-ours testnet = zero security by design; do not use for real secrets.**
 
 ## What it is / is not
 
@@ -40,6 +40,7 @@ A Cargo workspace (`Cargo.toml`) plus the specs. Toolchain pinned to Rust 1.83 (
 | `docs/06-operator-manual.md` | Node requirements + partner onboarding |
 | `docs/07-roadmap.md` | Phased plan (PoC → testnet → open → mainnet) |
 | `docs/GLOSSARY.md` | Terms (DKG, IBE, threshold BLS, …) |
+| `docs/whitepaper/` | 📄 **Whitepaper** — design, threat model & early deployment ([`whitepaper.md`](docs/whitepaper/whitepaper.md)) |
 | `docs/references/drand-analysis.md` | Fetched + analyzed drand v2 reference |
 
 ## Build & run
