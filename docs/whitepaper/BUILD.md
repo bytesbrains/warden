@@ -64,4 +64,3 @@ No archive submission (IACR ePrint / arXiv was considered and dropped). A formal
 - The reference list is a plain itemized list, not BibTeX. Convert to a `.bib` + `\cite{}` (fine as-is for the self-hosted paper).
 - In-text section references are literal (`§6.1`). A formal version would switch to `\label`/`\Cref` so they auto-number.
 - Section headings carry manual numbers ("1. Introduction"); auto-numbering is disabled so they don't double up. If you switch to `\Cref`, re-enable `secnumdepth` and drop the manual numbers.
-</content>

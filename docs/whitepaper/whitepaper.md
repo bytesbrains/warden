@@ -486,5 +486,3 @@ Rules: `cmp ∈ { ==, !=, >=, <=, >, < }` (string); all `uint256` args/values ar
 - F. Valsorda et al. *The age file-encryption format*, v1 (`age-encryption.org/v1`; C2SP specification).
 - Certicom Research. *SEC 1: Elliptic Curve Cryptography, Version 2.0* (SECG, 2009) — ECIES and EC primitives.
 - Warden project: source repository — https://github.com/bytesbrains/warden (MIT); overview / operator information — https://warden.bytesbrains.com; specification (`docs/`) — https://github.com/bytesbrains/warden/tree/main/docs.
-</content>
-</invoke>
