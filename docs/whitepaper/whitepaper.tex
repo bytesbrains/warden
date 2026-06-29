@@ -1,0 +1,1687 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  11pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+  \setmonofont[]{DejaVu Sans Mono}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Warden: Event-Gated Threshold Conditional-Decryption for Guaranteed-but-Deferred Encrypted Delivery},
+  pdfauthor={Sandeep Nandal},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Warden: Event-Gated Threshold Conditional-Decryption for
+Guaranteed-but-Deferred Encrypted Delivery}
+\author{Sandeep
+Nandal\thanks{BytesBrains Pte Ltd, \texttt{sandeep@nandal.in}. Solo authorship reflects the work as done; a co-author position is open to an academic collaborator who contributes to the formal peer-reviewed version.}}
+\date{Draft v1 · June 2026}
+
+\begin{document}
+\maketitle
+
+\textbf{Status disclosure (read first).} Warden is \textbf{deployed on a
+public testnet (Base Sepolia) and is pre-audit.} This paper presents a
+\emph{design, threat model, and early deployment experience}, not an
+audited production system. The current testnet federation --- five
+nodes, but all operated by a single party (BytesBrains, on one
+infrastructure provider) --- therefore has, by construction, \textbf{no
+timing-security} (see §6, W4); it exercises the protocol, integration,
+and liveness, not the trust model. Independent operators are actively
+being recruited (§9). We state this plainly because, for the audience
+this work addresses, calibrated honesty about limitations is the
+contribution's credibility, not a footnote to it.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Abstract}\label{abstract}
+
+Time-lock encryption lets a sender make a ciphertext readable only after
+a predetermined time, and recent constructions such as \emph{tlock}
+realize it efficiently over a threshold-BLS randomness beacon (drand).
+But an important class of applications needs a \emph{conditional} rather
+than a \emph{temporal} trigger, over a \emph{decades-long} horizon, with
+the data author \emph{absent} at release time: a dead-man's-switch that
+delivers a sealed message to designated recipients only if its owner
+stops checking in --- for digital estates, personal-safety triggers, and
+``your work survives you'' press-freedom scenarios.
+
+We present \textbf{Warden}, an event-gated threshold
+conditional-decryption network. A federation of independent operators
+holds shares of an identity-based master key (Boneh--Franklin IBE over
+threshold BLS, established by distributed key generation) and releases a
+per-message partial decryption key only when an on-chain condition --- a
+resettable smart-contract flag --- is observed true at finalized block
+depth. Payloads are \emph{double-wrapped}: an outer condition-gate the
+federation can open, and an inner recipient-key layer it cannot, so
+operators learn release \emph{timing} but never \emph{content}.
+
+We formalize the resettable-condition trigger and the owner-absent,
+decades-horizon threat model; describe master-key permanence across
+operator churn via resharing; give an honest security analysis
+(threshold timing guarantees, finality/reorg leakage, collusion and
+traitor-tracing); and report a Rust implementation deployed as a
+five-node testnet federation that runs end-to-end on Base Sepolia,
+integrated with the live Maktub protocol and a mobile client --- a
+single-trust-domain deployment that exercises the protocol and its
+integration, with independent-operator security as the explicit next
+step. Warden reuses an audited cryptographic substrate (drand's
+threshold-BLS/IBE/DKG stack) and contributes the \emph{system, threat
+model, and conditional-trigger design} --- not new cryptography. It is
+intended to run as token-free public-good infrastructure in the drand /
+League-of-Entropy tradition. The precise contribution claims and
+explicit non-claims are enumerated in §1.3 and §1.4.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{1. Introduction}\label{introduction}
+
+\subsection{1.1 The gap}\label{the-gap}
+
+Time-lock encryption (TLE) lets a sender seal a message that becomes
+readable only after a chosen point in the future, without trusting any
+single party to keep time. The deployed state of the art is
+\textbf{tlock} {[}Gailly--Melissaris--Romailler 2023{]}, which observes
+that drand's threshold-BLS randomness beacon is \emph{already} an
+identity-based-encryption key-generator: the beacon's signature on a
+future round number \emph{is} the IBE decryption key for that round. A
+sender encrypts ``to round R''; once the League-of-Entropy federation
+publishes round R's signature, anyone can decrypt --- offline, with no
+interaction at decryption time.
+
+This is powerful but fixes the trigger to a \textbf{clock}. A large and
+practically important class of applications needs the release to be
+gated not on \emph{time} but on a \emph{condition}, and over horizons
+and absence assumptions that the timelock literature does not target:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Conditional, not temporal.} ``Release if and only if event E
+  has happened,'' where E is some externally observable fact --- not
+  ``release at time T.''
+\item
+  \textbf{Resettable.} The condition is not monotone-by-fiat from the
+  sender's side: the owner actively keeps it \emph{false} by checking
+  in, and it flips \emph{true} only when they stop. This is the
+  dead-man's-switch shape, and it is the inverse of a timelock (where
+  the countdown is unstoppable once started).
+\item
+  \textbf{Decades-horizon and owner-absent.} The ciphertext may sit
+  dormant for years or decades, and --- definitionally --- the author is
+  \emph{not present} at release time to participate, re-key, or
+  intervene. Most timelock and threshold work assumes short horizons and
+  a live participant.
+\end{itemize}
+
+\subsection{1.2 Motivating application: Maktub /
+Veil}\label{motivating-application-maktub-veil}
+
+Warden is motivated by \textbf{Maktub}, a decentralized
+conditional-execution protocol on the Base L2 whose single primitive is:
+\emph{if the owner does not check in within a chosen interval, deliver
+an encrypted payload to designated recipients.} Maktub's on-chain
+contract (\texttt{MaktubCore}, ``Beat'') is immutable and holds no
+plaintext; it merely records, per \emph{beat}, whether the owner has
+gone silent (an \texttt{executed} status the contract latches to
+\texttt{true} once a timer lapses and an executor calls it).
+
+The capability this enables for end users --- \emph{sealed until you go
+silent; revocable while you are present; end-to-end encrypted to the
+recipient} --- is called \textbf{Veil}. Veil's three named use cases are
+equal: digital-estate inheritance (seed phrases, passwords, documents to
+heirs), personal-safety triggers (hikers, field workers, solo
+travelers), and press-freedom \textbf{``your work survives you''}
+(material a journalist prepared is delivered to recipients they
+designated if they become unable to deliver it themselves --- framed as
+\emph{work survival}, e.g.~accident or illness, \textbf{never} as
+adversarial-state anonymity).
+
+Maktub's contract enforces the \emph{timer and the trigger}. It does
+\textbf{not} by itself enforce the \emph{time-confidentiality} half of
+Veil: nothing in a public smart contract can hold a payload
+unreadable-until-trigger, because anything the contract can read, the
+world can read. That half is exactly what Warden supplies.
+\texttt{MaktubCore} requires \textbf{no modification} to support Warden
+--- Warden only \emph{reads} the beat's status.
+
+\subsection{1.3 Contribution}\label{contribution}
+
+We claim the following, precisely:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{A conditional, resettable trigger.} Release is gated on
+  \emph{mutable on-chain contract state} (a flag the owner resets by
+  checking in), evaluated at finalized block depth --- not a fixed time
+  or round. This problem shape is under-explored relative to tlock and
+  time-lock puzzles, and the \emph{combination} it sits in is not served
+  by deployed conditional-decryption systems (§2.6).
+\item
+  \textbf{An owner-absent, decades-horizon threat model}, with
+  master-key permanence maintained across operator churn by
+  \emph{resharing} (the master public key --- and hence the
+  decryptability of all dormant ciphertexts --- survives a completely
+  changed operator set).
+\item
+  \textbf{A double-wrap construction} that cleanly separates
+  \emph{timing control} (the threshold federation) from \emph{content
+  confidentiality} (a recipient-held key, pure mathematics): operators
+  can open the outer condition-gate but \textbf{never} see plaintext.
+\item
+  \textbf{An honest, extensive limitation analysis} (W1--W11):
+  early-release via collusion, liveness/delay, finality/reorg leakage,
+  operator/infra capture, master-key permanence as a double-edged sword,
+  the non-post-quantum horizon, condition-evaluation trust tiers, the
+  open-request metadata channel, cross-sender identity collision,
+  share-key registration, and request-channel denial-of-service.
+\item
+  \textbf{An open-source (MIT) implementation and live testnet
+  deployment:} a single Rust core driving a node daemon, a WASM web
+  client, and an FFI mobile client, running end-to-end as a five-node
+  federation on Base Sepolia and integrated with the Maktub protocol (a
+  single-trust-domain testnet; independent operators are being recruited
+  --- §9).
+\end{enumerate}
+
+The contribution is a \textbf{systems / applied} one. Gen-1 Warden
+reuses drand's audited threshold-BLS + Boneh--Franklin IBE + DKG +
+resharing essentially verbatim and replaces only the \emph{trigger}
+(clock → on-chain condition) and the engineering around it. We are
+explicit about this because aiming such work at cryptographic-theory
+venues would be both wrong and counterproductive: there is no new
+primitive here, and the genuinely novel surface (a resettable-condition
+release gate with a finality policy) is a systems contribution.
+
+\subsection{1.4 Explicit non-claims}\label{explicit-non-claims}
+
+The same honesty discipline that governs all Maktub copy governs this
+paper. We do \textbf{not} claim:
+
+\begin{itemize}
+\tightlist
+\item
+  That timing/revocation is \textbf{trustless}, \textbf{absolute}, or
+  \textbf{mathematically guaranteed}. It rests on a \textbf{threshold
+  honesty assumption} (no early release unless \texttt{t} operators
+  collude; no denial unless fewer than \texttt{t} stay honest and live
+  --- §6.1) \emph{and} on operators correctly observing the on-chain
+  condition. The trustless ideal is witness encryption (§2.4), which is
+  not deployable today; Warden is the best deployable approximation.
+\item
+  That Warden provides \textbf{metadata privacy or anonymity.} The
+  existence of a sealed message, its release timing, its public
+  condition, and (for Veil) its \texttt{beatId}, recipient set, and
+  sender-recipient relationship are \textbf{public on-chain by design.}
+  Warden hides \emph{content until the trigger} --- never \emph{that
+  something exists}.
+\item
+  That gen-1 is \textbf{post-quantum.} It is pairing-based (BLS12-381);
+  the realistic horizon for the threshold layer is on the order of
+  years, and no deployable post-quantum threshold-IBE replacement
+  exists. The envelope is algorithm-versioned so the cryptography can
+  migrate (§10).
+\end{itemize}
+
+\subsection{1.5 Roadmap of the paper}\label{roadmap-of-the-paper}
+
+§2 surveys the cryptographic background and positions Warden against
+timelock, time-lock puzzles, witness encryption, and signature-based
+witness encryption. §3 formalizes the resettable-condition trigger and
+the threat model. §4 gives the system design (double-wrap envelope,
+condition model, network planes, finality policy). §5 gives the
+cryptographic construction (DKG, encryption, threshold release,
+resharing). §6 is the honest security analysis (W1--W11) --- the
+credibility core. §7 describes the implementation; §8 the testnet
+deployment experience. §9 covers federation governance and
+sustainability; §10 limitations and future work; §11 ethics and
+responsible disclosure; §12 concludes.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{2. Background and Related
+Work}\label{background-and-related-work}
+
+\subsection{2.1 Threshold cryptography and distributed key
+generation}\label{threshold-cryptography-and-distributed-key-generation}
+
+A \emph{(t, n)}-threshold scheme splits a secret among \texttt{n}
+parties such that any \texttt{t} can jointly use it but any \texttt{t−1}
+learn nothing. Shamir secret sharing {[}Shamir 1979{]} is the
+foundation; Feldman {[}1987{]} and Pedersen {[}1991{]} add
+\emph{verifiability} (VSS), letting parties detect a cheating dealer.
+\textbf{Distributed key generation} (DKG) {[}Gennaro et al.~1999{]}
+removes the dealer entirely: \texttt{n} parties jointly produce a public
+key and individual private-key shares such that the full private key is
+\emph{never assembled by anyone}. drand uses Pedersen's DKG built from
+parallel Feldman VSS, and contributes a hardened orchestration layer
+around it (a durable state machine, explicit joiner/remainer/leaver
+lifecycle).
+
+\textbf{Threshold BLS} {[}Boneh--Lynn--Shacham 2001; Boldyreva 2003{]}
+is the release primitive Warden inherits. A BLS signature on message
+\texttt{m} under secret key \texttt{sk} is \texttt{sk·H(m)} for a
+hash-to-curve \texttt{H}. Splitting \texttt{sk} into Shamir shares
+\texttt{sk\_i}, each party emits a partial
+\texttt{sig\_i\ =\ sk\_i·H(m)}; any \texttt{t} partials Lagrange-combine
+\emph{in the exponent} into the full signature \texttt{sk·H(m)}.
+Signatures are deterministic (hence unbiasable), which is what makes the
+drand beacon usable as a key generator.
+
+\subsection{2.2 Identity-based encryption and timelock
+(tlock)}\label{identity-based-encryption-and-timelock-tlock}
+
+Boneh--Franklin IBE {[}BF 2001{]} lets a sender encrypt to an arbitrary
+\emph{identity string} using only a master public key; the matching
+decryption key \texttt{msk·H1(id)} is generated later by the key
+authority. The Boneh--Franklin ciphertext \texttt{(U,\ V,\ W)} with the
+Fujisaki--Okamoto transform {[}FO 1999{]} achieves CCA security in the
+random-oracle model.
+
+\textbf{tlock} {[}Gailly--Melissaris--Romailler 2023{]} makes the
+crucial observation: a threshold-BLS beacon \emph{is} an IBE private-key
+generator that does not know it is one. Set the IBE identity to a future
+round number; the beacon's BLS signature over that round
+(\texttt{msk·H1(round)}) \emph{is exactly} the IBE decryption key for
+that identity. No extra protocol is needed --- when the beacon naturally
+publishes the round signature, the timelock opens. tlock requires the
+beacon's \textbf{unchained} mode (the message signed for a future round
+is predictable: \texttt{H(round)} alone, not chained on the previous
+signature), and it packages the result as a hybrid age-encryption
+envelope with a
+\texttt{-\textgreater{}\ tlock\ \{round\}\ \{chainHash\}} stanza.
+
+\textbf{The single most important fact Warden inherits from this line:}
+nothing in the IBE math requires the identity to be a round number.
+\emph{The identity is whatever string the network agrees to sign.}
+Warden swaps \texttt{H(round)} for \texttt{H(condition)} and the
+time-elapsed trigger for an on-chain-boolean trigger; the entire
+pairing/IBE/threshold/envelope layer is reused unchanged (§5,
+{[}drand-analysis §5, §8{]}).
+
+drand itself is run by the \textbf{League of Entropy}, a federation of
+more than a dozen independent organizations (founded 2019 by Protocol
+Labs, Cloudflare, EPFL, Kudelski, and the University of Chile, among
+others; membership has since rotated) --- the operational template for
+Warden's public-good federation (§9).
+
+\subsection{2.3 Time-lock puzzles and
+VDFs}\label{time-lock-puzzles-and-vdfs}
+
+A different lineage realizes delay through \emph{sequential
+computation}: time-lock puzzles {[}Rivest--Shamir--Wagner 1996{]} and
+verifiable delay functions {[}Wesolowski 2019; Pietrzak 2019{]} force a
+solver to perform an inherently sequential amount of work before a value
+is recoverable. These are \emph{self-contained} (no committee) but pay
+for it: the ``time'' is wall-clock compute that must actually be
+expended, the horizon is hard to calibrate across hardware generations,
+and --- decisively for our setting --- they are \textbf{temporal, not
+conditional}, and assume a present solver. They do not fit a
+decades-dormant, owner-absent, condition-gated release. Warden is a
+committee-release design, not a sequential-work one; we note the
+contrast rather than compete on it.
+
+\subsection{2.4 Witness encryption --- the trustless ideal, and why not
+yet}\label{witness-encryption-the-trustless-ideal-and-why-not-yet}
+
+\textbf{Witness encryption} {[}Garg--Gentry--Sahai--Waters 2013{]}
+encrypts to an NP statement such that anyone holding a \emph{witness}
+can decrypt and no one else can. Applied to our setting, the on-chain
+proof that \texttt{executed(beatId)==true} would \emph{itself} be the
+decryption key --- \textbf{no federation at all}, hence genuinely
+trustless timing. This is the endgame. It is not deployable: general WE
+rests on indistinguishability obfuscation or similarly idealized
+assumptions, and even recent \textbf{WE-from-SNARKs/KZG} results
+{[}e.g.~ePrint 2025/1364{]} that target concrete blockchain state remain
+theoretical (they require Base's \texttt{executed} flag expressed as a
+SNARK/KZG statement under idealized assumptions). Warden treats WE as
+the gen-3 successor (§10) and keeps its envelope \texttt{alg}-versioned
+so a WE outer layer can drop in with no change to recipients or to
+Maktub.
+
+\textbf{Signature-based witness encryption (SWE)} {[}McFly, ePrint
+2022/433; compact SWE 2024/1477; eWEB 2025/1064{]} is a nearer
+approximation: encrypt against a committee's verification keys plus a
+\emph{tag}, such that the committee's threshold \emph{signature on the
+tag} is the decryption witness --- users never interact with the
+committee, and \emph{no per-item decryption key and no master secret are
+ever held.} This ``no master secret'' property is, on paper, the
+longevity-optimal design for a dead-man's-switch, and it runs on the
+same BLS12-381 substrate. Warden targets SWE for gen-2 (§10) but does
+not build on it today: the only implementations are dormant research
+prototypes, ciphertext is linear in committee size (heavy on mobile),
+and the compact variant requires iO.
+
+\subsection{2.5 Removing DKG, and detecting
+collusion}\label{removing-dkg-and-detecting-collusion}
+
+Two recent advances bear directly on Warden's two worst liabilities (DKG
+complexity; undetectable collusion). \textbf{Silent threshold
+encryption} {[}ePrint 2024/263{]} derives the joint public key as a
+deterministic function of operators' \emph{locally published} keys ---
+no interactive DKG ceremony. \textbf{Silent threshold traitor-tracing}
+(ST3) {[}ePrint 2025/342; CCS 2025{]} adds \emph{public tracing of a
+colluding committee with no trusted authority}. The latter is
+significant for us: gen-1 Warden cannot detect silent early-reveal
+collusion (weakness W1, §6), and traitor-tracing would make such
+collusion \emph{publicly attributable}, converting an undetectable
+attack into a detectable, deterrable one. We treat traitor-tracing as a
+\textbf{layer} to adopt when it has audited code, independent of the
+base scheme (§8 of the architecture decision).
+
+\subsection{2.6 Deployed and adjacent conditional-decryption
+systems}\label{deployed-and-adjacent-conditional-decryption-systems}
+
+Warden is not the first system to release decryption capability on a
+condition; positioning it honestly against deployed and academic
+neighbours sharpens the actual delta.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{TACo (Threshold Access Control), Threshold Network / NuCypher}
+  --- a productized threshold network that releases decryption rights
+  when access \emph{conditions}, including on-chain state, are
+  satisfied. This is the closest \emph{productized} competitor (now
+  under World Ethical Data Foundation stewardship, with a stable
+  relaunch slated for 2026); its conditions are point-in-time access
+  checks rather than latching triggers. Warden's distinguishing
+  requirements are the \emph{monotone-latching} condition discipline
+  (§3.1), \emph{permanence across disjoint operator sets via resharing}
+  over a decades horizon (§5.4), and an explicit \emph{finality policy}
+  for the chain read (§4.4).
+\item
+  \textbf{Shutter Network} --- threshold encryption with ``keypers''
+  releasing decryption keys on a trigger (originally anti-front-running
+  for mempools). It shares the threshold-release shape but targets
+  short-horizon, per-epoch keys, not dormant, owner-absent,
+  resettable-condition ciphertexts.
+\item
+  \textbf{Calypso} {[}Kokoris-Kogias et al.~2021{]} --- on-chain secret
+  management that releases threshold-encrypted secrets when an on-chain
+  access policy is met. Direct academic prior art for ``decrypt when a
+  blockchain condition holds''; Warden differs in the owner-absent
+  dead-man's-switch trigger, the decades-permanence requirement, and the
+  multi-platform client.
+\item
+  \textbf{Encryption to the Future / YOSO} {[}Campanelli et al.~2022;
+  Gentry et al.{]} --- sending ciphertexts to \emph{future} committees
+  selected over time; it motivates the owner-absent, operator-churn
+  setting that resharing addresses here.
+\end{itemize}
+
+The point is not that conditional decryption is new --- it is not ---
+but that the specific \emph{combination} in §2.7 is not served by these
+systems. \emph{(The precise competitive deltas, especially against
+TACo's evolving condition language, should be re-verified against each
+system's current capabilities before any future peer-reviewed version.)}
+
+\subsection{2.7 How Warden differs}\label{how-warden-differs}
+
+Against all of the above, Warden's distinguishing combination is:
+\textbf{(a)} a \emph{resettable on-chain condition} as the release
+trigger (vs.~fixed round/time in tlock and time-lock puzzles);
+\textbf{(b)} an explicit \emph{decades-horizon, owner-absent} threat
+model with permanence-through-resharing; and \textbf{(c)} a deployed
+multi-platform system (node + WASM + mobile FFI) with a finality policy
+for the chain read --- a security-critical surface that has no analog in
+drand because drand has a clock, not a chain to observe. None of these
+is new \emph{cryptography}; together they are a new \emph{system}.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{3. Problem Statement and Threat
+Model}\label{problem-statement-and-threat-model}
+
+\subsection{3.1 The resettable-condition
+trigger}\label{the-resettable-condition-trigger}
+
+Let \texttt{C} be a \textbf{condition}: a canonical, public,
+deterministic predicate over finalized on-chain state. The release
+predicate Warden enforces is:
+
+\begin{quote}
+\emph{Release the decryption key for ciphertext \texttt{e} if and only
+if \texttt{C(e)} is observed} true \emph{at finalized block depth.}
+\end{quote}
+
+Two properties make \texttt{C} suitable, both load-bearing (§4.2):
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Determinism.} Every honest operator, reading finalized chain
+  state at the agreed confirmation depth, must compute the \emph{same}
+  yes/no. A threshold scheme cannot release if honest parties disagree
+  on whether the condition holds.
+\item
+  \textbf{Monotonicity (latching).} Once \texttt{C} becomes true it
+  stays true. Because a released key cannot be un-released, the trigger
+  must not be allowed to flip back. The canonical instance ---
+  \texttt{executed(beatId)==true} for a Maktub Beat --- is naturally
+  latching: the contract never un-executes. Non-monotone raw predicates
+  (e.g.~\texttt{price\ \textgreater{}\ X}) are rejected unless
+  \emph{anchored} into a permanent form (``became true at/by block B'',
+  or an event-was-emitted form).
+\end{itemize}
+
+The \emph{resettable} character lives entirely on the \textbf{sender's}
+side and entirely \emph{before} the trigger: the owner keeps \texttt{C}
+false by checking in, and revocation is the owner constructing
+\texttt{C} so that it can be made \textbf{permanently unsatisfiable}
+(Maktub's \texttt{deactivate(beatId)} ensures \texttt{executed} can
+never become true → Warden never releases → the ciphertext is permanent
+gibberish). From Warden's perspective the \emph{observed} predicate is
+still monotone; resettability is a property of how the application
+drives the underlying contract state.
+
+\subsection{3.2 Actors}\label{actors}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Author / owner} --- encrypts the payload offline and drives
+  the condition (checks in, or revokes). Absent at release time by
+  assumption.
+\item
+  \textbf{Recipient(s)} --- hold the private key that the inner layer is
+  encrypted to; the only parties who can ever read content.
+\item
+  \textbf{Operator federation} --- \texttt{n} independent organizations,
+  each holding one share of the master key; each runs a node that
+  observes the chain and serves partial decryptions.
+\item
+  \textbf{Chain} --- the public ledger (Base) whose finalized state
+  defines the condition.
+\item
+  \textbf{Adversary} --- see §3.4.
+\end{itemize}
+
+\subsection{3.3 Security goals}\label{security-goals}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{G1 --- Time-confidentiality.} Before \texttt{C} holds, the
+  payload is unreadable by \emph{everyone, including the intended
+  recipient.}
+\item
+  \textbf{G2 --- Delivery availability.} After \texttt{C} holds, the
+  payload is readable by the intended recipient, and remains so
+  indefinitely (release is idempotent and retryable forever). In the
+  current client-requested mode (§5.3), release is
+  \emph{recipient-initiated} --- a recipient must pull and combine ---
+  so this is availability-on-demand, not push delivery; the autonomous
+  mode (§5.3) pre-produces partials node-side, but a recipient still
+  fetches and decrypts.
+\item
+  \textbf{G3 --- Content confidentiality.} Only the intended recipient
+  ever reads plaintext --- \emph{including} against a fully-colluding
+  federation.
+\end{itemize}
+
+\subsection{3.4 Adversary model and
+assumptions}\label{adversary-model-and-assumptions}
+
+We assume:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Threshold-bounded corruption} for timing.
+  Confidentiality-before-trigger (G1) holds as long as fewer than
+  \texttt{t} operators collude; availability-after-trigger (G2) holds as
+  long as at least \texttt{t} operators are honest and live. With
+  \texttt{t\ ≈\ ⌈2n/3⌉} these bounds trade off (raising \texttt{t}
+  strengthens G1 but weakens G2-liveness, and vice versa) --- the
+  standard threshold tension, stated precisely in §6.1; it is \emph{not}
+  an ``honest majority''. \textbf{G3 rests on neither} (it is pure
+  mathematics, §6).
+\item
+  \textbf{Correct finalized-state observation:} honest operators read
+  true finalized chain state (not an eclipsed or spoofed view). This is
+  part of the trust model and is \emph{new relative to drand}, which has
+  no chain to observe (§4.4, §6/W3, §6/W4).
+\item
+  \textbf{Recipient key secrecy:} the recipient's private key is not
+  compromised (otherwise G3 is moot --- but only for that one message).
+\item
+  \textbf{Independence of operators:} the security parameter is not raw
+  node count but \emph{genuine independence} (distinct organizations,
+  jurisdictions, and infrastructure), so that no single subpoena,
+  coercion, or failure reaches \texttt{t} (§6/W4, §9).
+\end{itemize}
+
+The two-axis trust split is the heart of the model and is stated in full
+in §6.1.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{4. System Design}\label{system-design}
+
+\subsection{4.1 The double-wrap
+envelope}\label{the-double-wrap-envelope}
+
+Warden's defining design choice is that the federation's power is
+\emph{confined to timing} and can never extend to content. This is
+achieved by nesting two independent gates over a single random content
+key \texttt{K}:
+
+\begin{verbatim}
+K          = random symmetric content key
+inner      = AEAD(payload, K)                       ← the content
+K_wrapped  = ECIES(K, recipientPub)                 ← recipient-gated.  PURE MATH.
+outer      = Warden-IBE(K_wrapped, H(condition))    ← condition-gated.  Federation can open this.
+\end{verbatim}
+
+Warden's release only ever opens \textbf{outer}, which reveals
+\texttt{K\_wrapped} --- \emph{an ECIES ciphertext}, not \texttt{K} and
+not the payload. Only the recipient's private key turns
+\texttt{K\_wrapped} into \texttt{K}. Therefore \textbf{both} the
+condition (to open \texttt{outer}) \textbf{and} the recipient key (to
+open \texttt{K\_wrapped}) are required, and \textbf{even a
+fully-colluding federation that releases every outer key learns only
+release timing, never content} (this is goal G3). Content
+confidentiality is independent of Warden entirely (given recipient-key
+secrecy, §3.4).
+
+\textbf{As implemented.} Because the Boneh--Franklin IBE plaintext block
+is a fixed 32 bytes, the outer layer is realized as a hybrid:
+\texttt{outer.ibe\ =\ IBE(obk,\ H(condition))} gates a random 32-byte
+\texttt{obk}, and \texttt{outer.seal\ =\ AEAD\_obk(K\_wrapped)} seals
+the ECIES-wrapped key under \texttt{obk}. This is logically identical to
+``IBE-gate \texttt{K\_wrapped}''. Hardening from a security review: both
+AEAD layers bind \texttt{domain\ ‖\ network\ ‖\ H(condition)} as
+associated data (tamper-evident and domain-separated), and the payload
+is \textbf{bucket-padded} to hide its length. AEAD is ChaCha20-Poly1305
+{[}RFC 8439{]}; the recipient layer is ECIES over secp256k1 --- chosen
+so recipients reuse their existing Ethereum wallet keypair rather than
+manage a second key --- with HKDF info bound to
+\texttt{ephPub\ ‖\ recipientPub} (SEC1 shared-info). (The IBE/threshold
+layer is on BLS12-381; the two curves serve the two different layers.)
+\textbf{No recipient metadata is stored in the envelope} --- the
+recipient is implicit in who can ECIES-open \texttt{K\_wrapped}. All
+domain tags and pad buckets are provisional and will be frozen with
+cross-language test vectors before mainnet.
+
+The envelope is \texttt{alg}-versioned (\texttt{warden-v1}); future
+schemes (SWE, witness encryption) replace only the
+\texttt{outer}/\texttt{condition} handling, leaving \texttt{inner} and
+the integration unchanged, and old envelopes remain decryptable forever
+(§10). An optional age-stanza form
+(\texttt{-\textgreater{}\ warden\ \textless{}network-hash\textgreater{}\ \textless{}H(condition)\textgreater{}})
+provides interoperability with the tlock/age ecosystem, mirroring
+tlock's stanza with \emph{round} → \emph{H(condition)} and
+\emph{chainHash} → Warden network hash.
+
+\subsection{4.2 The condition model}\label{the-condition-model}
+
+The IBE identity a payload is encrypted to is the hash of a
+\textbf{canonical, versioned condition specification}, serialized with
+\textbf{RFC 8785 (JSON Canonicalization Scheme)} so the bytes are
+byte-identical across the Rust, TypeScript, and Dart implementations:
+
+\begin{verbatim}
+identity = H( "warden-cond-v1" ‖ jcs_rfc8785(condition) )
+\end{verbatim}
+
+When asked for its partial on \texttt{identity}, a node is given the
+condition \texttt{C} (public metadata in the envelope), checks
+\texttt{H(C)\ ==\ identity}, independently evaluates \texttt{C} against
+finalized chain state, and returns its partial \emph{iff} \texttt{C}
+holds. This \textbf{binds the condition cryptographically to the
+ciphertext}: conditions cannot be swapped after encryption. The
+condition is \emph{public} --- it is metadata, not a secret (for Veil it
+reveals \texttt{beatId} and that release gates on the beat's status,
+both already public on-chain --- no new leakage).
+
+The schema (\texttt{cond-v1}) supports exactly one \texttt{type} per
+condition plus a mandatory \texttt{meta}:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{contract} ---
+  \texttt{\{\ chain,\ address,\ fn,\ args,\ word?,\ test,\ meta\ \}}
+\item
+  \texttt{block} ---
+  \texttt{\{\ chain,\ field:\ "number"\textbar{}"timestamp",\ cmp,\ value,\ meta\ \}}
+\item
+  \texttt{event} ---
+  \texttt{\{\ chain,\ address,\ sig,\ args,\ meta\ \}}
+\item
+  \texttt{all\ \textbar{}\ any\ \textbar{}\ not\ \textbar{}\ threshold}
+  ---
+  \texttt{\{\ of:\ {[}...sub-conditions{]},\ k\ (threshold\ only),\ meta\ \}}
+\end{itemize}
+
+The Veil release condition for a real Maktub Beat illustrates a subtlety
+that the canonicalization must survive: \texttt{MaktubCore} exposes
+\textbf{no \texttt{executed(uint256)} getter} --- execution status is
+field 7 (the 8th element) of the \texttt{getHeartbeat(uint256)} return
+tuple --- so the condition selects it with \texttt{word:\ 7}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"type"}\FunctionTok{:} \StringTok{"contract"}\FunctionTok{,} \DataTypeTok{"chain"}\FunctionTok{:} \DecValTok{84532}\FunctionTok{,}
+  \DataTypeTok{"address"}\FunctionTok{:} \StringTok{"0xb603C96D089F64Ac487EE0bdaE97D49848F86133"}\FunctionTok{,}
+  \DataTypeTok{"fn"}\FunctionTok{:} \StringTok{"getHeartbeat(uint256)"}\FunctionTok{,} \DataTypeTok{"args"}\FunctionTok{:} \OtherTok{[}\StringTok{"123"}\OtherTok{]}\FunctionTok{,} \DataTypeTok{"word"}\FunctionTok{:} \DecValTok{7}\FunctionTok{,}
+  \DataTypeTok{"test"}\FunctionTok{:} \FunctionTok{\{} \DataTypeTok{"cmp"}\FunctionTok{:} \StringTok{"=="}\FunctionTok{,} \DataTypeTok{"value"}\FunctionTok{:} \KeywordTok{true} \FunctionTok{\},}
+  \DataTypeTok{"meta"}\FunctionTok{:} \FunctionTok{\{} \DataTypeTok{"finality"}\FunctionTok{:} \DecValTok{32}\FunctionTok{,} \DataTypeTok{"tier"}\FunctionTok{:} \DecValTok{1} \FunctionTok{\}}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+Two serialization rules are load-bearing because the bytes are hashed
+into the identity, and a mismatch yields a \emph{different} identity
+that silently breaks decryption: (i) \textbf{all \texttt{uint256}
+args/values are decimal strings}, never JSON numbers, to avoid
+JavaScript's \(2^{53}-1\) precision loss and to guarantee byte-identical
+serialization across platforms; (ii) \texttt{word} is \textbf{omitted
+from the canonical form when 0}, so single-value-getter conditions hash
+identically to the pre-\texttt{word} schema.
+
+\textbf{Trust tiers.} \emph{Tier 1} --- on-chain state
+(\texttt{contract}/\texttt{block}/\texttt{event}, finalized) --- is
+deterministic and is what v1 ships. \emph{Tier 2} --- external/oracle
+data --- adds a data-source trust and a determinism risk; it is opt-in
+and later-phase, and operators \emph{declare} which tiers they evaluate
+so clients can decide (§6/W7). The same condition machinery generalizes
+well beyond Veil --- time capsules
+(\texttt{block.timestamp\ \textgreater{}=\ T}), multi-trigger delivery
+(\texttt{any(executed,\ deadline)}), milestone escrow, DAO-vote-gated
+reveals, or any third-party EVM contract getter --- which is the
+adoption story (§9).
+
+\subsection{4.3 Network planes}\label{network-planes}
+
+Warden inherits drand's hard-won plane separation. drand's v2.0
+post-mortem documented a reshare-downgrade attack that arose precisely
+from \emph{merging} operator-control RPC with node-to-node RPC on one
+service; the fix split them, and Warden adopts the separation from the
+start:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Control plane} --- local-only operator management
+  (\texttt{wardenctl} → daemon over a localhost port). \textbf{Never
+  internet-exposed.}
+\item
+  \textbf{Private plane} --- node-to-node messaging for DKG and
+  resharing, authenticated and behind TLS (terminated by a reverse
+  proxy; the daemon does not terminate TLS itself).
+\item
+  \textbf{Public plane} --- clients fetch partial decryptions over
+  HTTP/relay. Read-only; partials are publicly verifiable against the
+  master public key, so the relay need not be trusted.
+\end{itemize}
+
+\subsection{4.4 Finality policy}\label{finality-policy}
+
+A node must decide \emph{when} an on-chain condition is ``final enough''
+to release on. This is the genuinely new, security-critical surface
+Warden adds over drand, because \textbf{a reorg that reverts the
+condition after a release is an irreversible confidentiality leak}
+(§6/W3). Policy:
+
+\begin{itemize}
+\tightlist
+\item
+  Read at the chain's \textbf{finalized/safe head}, or at least the
+  chain's finality depth (for Base, prefer L1-finalized state). The
+  current implementation reads at the \texttt{finalized} tag.
+\item
+  The \textbf{minimum finality floor is a federation-wide consensus
+  parameter --- identical for every node, not configured locally.}
+  Per-node floors would make nodes disagree on whether a condition is
+  final and stall release (a node with a higher local floor would block
+  the threshold). \texttt{C.meta.finality} may override the floor
+  \emph{upward only}, never below it.
+\item
+  The residual reorg risk for the chosen depth is documented, not
+  hidden.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{5. Cryptographic
+Construction}\label{cryptographic-construction}
+
+The cryptography is reused from drand near-verbatim; what follows states
+it precisely and marks the one new ingredient (the condition gate).
+
+\subsection{5.1 Setup (key generation)}\label{setup-key-generation}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Mainnet --- real DKG, no dealer.} All operators run one DKG
+  ceremony (Pedersen/Feldman VSS, drand-derived), producing one
+  \textbf{master public key} \texttt{P\_pub} and one \textbf{share
+  \texttt{sk\_i} per operator}; the master private key \texttt{msk} is
+  never assembled. The threshold targets a BFT-style
+  \texttt{t\ ≈\ ⌈2n/3⌉} (minimum \texttt{⌊n/2⌋+1}). The deployment
+  inherits drand's lifecycle (joiners/remainers/leavers), strict
+  control-/node-plane separation, and \textbf{\texttt{OldThreshold}
+  downgrade protection} on every reshare (the v2.0 attack class).
+\item
+  \textbf{Testnet --- trusted dealer.} A one-off script generates
+  \texttt{msk}, Shamir-splits it into \texttt{n} proper field-element
+  shares, and injects one per node. The full key briefly exists in the
+  dealer --- \textbf{testnet-only, never mainnet} --- and the script
+  outputs \texttt{P\_pub} (client config) and optionally each node's
+  share-public-key (for partial verification).
+\end{itemize}
+
+\subsection{5.2 Encryption (client, offline, no network
+interaction)}\label{encryption-client-offline-no-network-interaction}
+
+\begin{verbatim}
+K          = random symmetric content key
+inner      = AEAD(payload, K)
+K_wrapped  = ECIES(K, recipientPub)
+identity   = H("warden-cond-v1" ‖ jcs_rfc8785(condition))
+outer      = IBE_encrypt(K_wrapped, identity, P_pub)      // BF-IBE (U, V, W)
+envelope   = { alg: "warden-v1", network, condition, outer, inner }
+\end{verbatim}
+
+The Boneh--Franklin ciphertext (with the FO transform for CCA security)
+is, following tlock:
+
+\begin{verbatim}
+U = r·G
+V = σ  XOR  H2( e(Q_id, P_pub)^r )      where Q_id = H1(identity)
+W = M  XOR  H4(σ)                        with r = H3(σ ‖ M)   (Fujisaki–Okamoto)
+\end{verbatim}
+
+The pairing is written for the concrete BLS12-381 placement used by
+tlock/drand quicknet: the identity hashes into G1
+(\texttt{Q\_id\ =\ H1(identity)\ ∈\ G1}), the master public key lives in
+G2 (\texttt{P\_pub\ ∈\ G2}), and partials/decryption keys are in G1,
+with \texttt{e:\ G1\ ×\ G2\ →\ G\_T}. Because the BF plaintext block is
+a fixed 32 bytes, \texttt{outer} is realized as the hybrid of §4.1 ---
+\texttt{IBE(obk)} gates a random 32-byte key that AEAD-seals the larger
+\texttt{K\_wrapped} --- which is logically identical to IBE-gating
+\texttt{K\_wrapped} directly, but is \emph{necessary} rather than
+cosmetic since \texttt{K\_wrapped} exceeds one BF block.
+
+\subsection{5.3 Release (the condition gate --- the new
+component)}\label{release-the-condition-gate-the-new-component}
+
+Each node, on a request for \texttt{identity} carrying condition
+\texttt{C}:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Verify \texttt{H(C)\ ==\ identity} (binding).
+\item
+  Verify \texttt{C.type}/\texttt{tier} is supported by this node.
+\item
+  \textbf{Evaluate \texttt{C} against finalized chain state} (read the
+  named chain at no fewer than \texttt{C.meta.finality} confirmations,
+  never below the federation floor).
+\item
+  If \texttt{C} holds, return the partial
+  \texttt{sig\_i\ =\ sk\_i\ ·\ H1(identity)} (publicly verifiable
+  against node \texttt{i}'s share-public-key); otherwise return
+  \texttt{ConditionNotMet}.
+\end{enumerate}
+
+The client collects \texttt{t} valid partials, Lagrange-combines them
+\emph{in the exponent} into the IBE decryption key
+\texttt{outerKey\ =\ msk\ ·\ H1(identity)}, IBE-decrypts \texttt{outer}
+to recover \texttt{K\_wrapped}, has the recipient ECIES-open
+\texttt{K\_wrapped} to \texttt{K}, and AEAD-decrypts \texttt{inner} to
+the plaintext. Decryption (given a met condition) requires no further
+interaction beyond gathering partials.
+
+\textbf{Identity domain-separation (security-critical).} Unlike drand
+round numbers, which are globally unique by construction,
+condition-derived identities are \emph{attacker-influenceable}. To
+prevent cross-item key reuse and grinding, the hash-to-curve \texttt{H1}
+must be strongly domain-separated and must bind the chain id, contract
+address, and full condition. A partial minted for one condition must
+never open a ciphertext for another (§6/W7).
+
+\textbf{Idempotent and retryable.} Because the condition is monotone and
+chain state is permanent, release can be requested at any later time and
+always succeeds once met; nodes may cache released partials and serve
+them forever. A temporarily-offline network therefore causes
+\emph{delay, not loss} (§6/W2). The current implementation ships
+\textbf{client-requested} signing (\texttt{POST\ /partial} evaluates and
+signs on demand); an \textbf{autonomous} mode (nodes watch the contract
+and pre-produce partials when the condition flips, for better liveness)
+is the mainnet target.
+
+\subsection{5.4 Resharing --- the permanence
+mechanism}\label{resharing-the-permanence-mechanism}
+
+When operators join or leave (or for periodic share refresh), the
+federation runs \textbf{resharing}: each old node deals its existing
+share as the \emph{free coefficient} of a new polynomial; Lagrange
+interpolation gives the new node set shares of the \textbf{same}
+\texttt{msk} --- so \texttt{P\_pub} is unchanged and \textbf{all
+historical ciphertexts remain decryptable}. Old and new operator sets
+may be entirely disjoint. \texttt{OldThreshold} MUST be specified
+(downgrade protection). Resharing \emph{can} change membership, every
+share (rotation), and the threshold; it \emph{cannot} change
+\texttt{P\_pub} (and hence the decryptability of past ciphertexts). This
+is precisely the \textbf{permanence-with-churn} property that no
+off-the-shelf vendor offered and that the decades-horizon requirement
+demands.
+
+\subsection{5.5 Verifiability}\label{verifiability}
+
+Every partial \texttt{sig\_i} is a BLS signature verifiable against node
+\texttt{i}'s published share-public-key; the combined key verifies
+against \texttt{P\_pub}. Clients reject invalid partials before
+combining (relay-trust-free, exactly as drand clients verify beacons
+against the chain public key). A partial released for a condition that
+is \emph{not} met is therefore \textbf{publicly provable misbehavior},
+which can feed an eviction/slashing process in tokenized deployments
+(not required for the public-good federation, §9).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{6. Security Analysis}\label{security-analysis}
+
+This section is the credibility core. We state the trust split exactly
+and then walk the weaknesses one by one; for this audience, the rigor of
+the limitation analysis \emph{is} the contribution's value.
+
+\subsection{6.1 The two-axis trust
+split}\label{the-two-axis-trust-split}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Property
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Rests on
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Strength
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Content confidentiality} (only the recipient ever reads
+plaintext --- G3) & the recipient's own key (ECIES \emph{inner} layer) &
+\textbf{Pure math.} Even a fully-colluding federation cannot read
+content. \\
+\textbf{Timing + revocation} (unreadable until the condition holds ---
+G1/G2) & a \textbf{threshold-bounded} federation (fewer than \texttt{t}
+collude) \emph{and} nodes correctly observing the on-chain condition &
+\textbf{Threshold}, not trustless. \\
+\end{longtable}
+
+The double-wrap is what confines the federation's power to
+\emph{timing}: a colluding federation can release the outer key early,
+or refuse it, but never read content.
+
+The timing axis has two distinct thresholds, not one ``majority''.
+Confidentiality (G1) is broken only if \texttt{t} operators collude to
+release early; availability (G2) fails only if fewer than \texttt{t}
+honest operators are reachable to release at all. With
+\texttt{t\ ≈\ ⌈2n/3⌉} the design tolerates up to \texttt{t−1} colluders
+without an early leak and up to \texttt{n−t} unavailable nodes without
+stalling --- and the two cannot both be maximized, so the choice of
+\texttt{t} is an explicit confidentiality-versus-liveness trade, not a
+single honest-majority assumption.
+
+\subsection{6.2 Weaknesses (extensive, for the deployable
+design)}\label{weaknesses-extensive-for-the-deployable-design}
+
+\textbf{W1 --- Early reveal by bribing a threshold.} A \emph{receiver}
+who corrupts \texttt{t} operators can have the outer key released before
+the condition holds and --- with their own recipient key --- read early.
+Bounds and defenses: only the receiver benefits (content is
+inner-locked, so a third-party briber gains nothing readable); the cost
+is corrupting \texttt{t} \emph{independent} operators, so the defense is
+economic and diversity-based (a large, jurisdictionally-diverse
+federation and a higher \texttt{t}); the attack bites hardest on
+high-value beats (large-wallet inheritance) where the bribe bar equals
+the wallet's value. An optional trigger-gated-identity construction can
+force such an attack to be a \emph{loud, detectable blanket release}
+rather than a quiet targeted one. As of the 2026-06 scan,
+\textbf{threshold traitor-tracing} (ST3, ePrint 2025/342) can make a
+colluding committee \emph{publicly attributable} --- turning W1 from
+undetectable to detectable-and-deterrable --- and is the tracked
+mitigation (a layer to adopt when it has audited code, §10).
+
+\textbf{W2 --- Liveness / denial → mostly delay, not loss.} Because the
+ciphertext and the condition are permanent, release is retryable
+forever; a temporarily down or refusing network causes \emph{delayed}
+delivery, not loss, and the receiver can pull at any later time.
+Permanent loss occurs only if \emph{all} redundant Warden
+generations/networks die forever --- mitigated by resharing
+(permanence-with-churn) plus multi-network redundancy; there is
+deliberately no first-party backup key (see W4). Delay severity is
+use-case dependent: acceptable for inheritance, harmful for urgent
+safety triggers, which argues for high availability there.
+
+\textbf{W3 --- Finality / reorg leak (new; no drand precedent).} If a
+node releases on an \texttt{executed==true} state that is subsequently
+reorged away, the reveal is irreversible. Mitigation is the finality
+policy of §4.4 (release only on finalized state at a conservative,
+federation-wide depth). This is a genuinely new, security-critical
+surface that Warden adds over drand precisely because Warden observes a
+chain rather than a clock.
+
+\textbf{W4 --- Operator/infra capture, and the no-first-party-key rule.}
+A federation entirely controlled by one party (e.g.~all nodes in one
+cloud account) collapses to a single party: compellable and capable of
+early release. \textbf{Warden never holds a release key itself}, and
+real security requires \emph{genuinely independent} operators. This is
+why the present testnet --- five nodes, but a single trust domain (one
+operator, one provider) --- has \textbf{zero timing-security and is for
+protocol exercise only.} A related capture vector is
+\emph{condition-source integrity}: if many operators rely on the
+\emph{same} public RPC provider, a compromise or \textbf{eclipse} of
+that provider can spoof \texttt{executed==true} and trick a threshold
+into early release \emph{without breaking any cryptography}. Mainnet
+operators must therefore run their own chain node or use independent,
+authenticated, jurisdictionally-diverse RPC endpoints, and must read at
+the federation-wide finality floor. The drand v2.0 lesson is inherited
+in full: strict control-/node-plane separation and \texttt{OldThreshold}
+downgrade protection on every reshare, or a malicious operator can chain
+reshares to reduce the threshold to themselves and recover \texttt{msk}.
+
+\textbf{W5 --- Master-key permanence is double-edged.} \texttt{P\_pub}
+is immutable across reshares (the permanence feature). The consequence:
+\emph{any} eventual reconstruction of \texttt{msk} breaks \emph{all}
+past and future ciphertexts under that key --- and Warden's ciphertexts
+may sit dormant for years. Reshare hygiene is non-negotiable, and a
+key-rotation/new-generation migration story (opt-in re-encryption,
+mirroring Maktub's immutable-V2 pattern) is part of the roadmap.
+
+\textbf{W6 --- Not quantum-resistant.} BLS/IBE are pairing-based, not
+post-quantum (the stated tlock horizon is on the order of five years).
+For payloads meant to ``survive you by decades'' this is a real limit to
+disclose to product and legal stakeholders. There is currently no
+deployable post-quantum replacement for threshold-IBE/BLS, so the
+decades claim is unbacked \emph{at the threshold layer}; the mitigation
+is to keep the envelope \texttt{alg}-versioned and to
+post-quantum-harden the \emph{inner} recipient layer first, where
+deployable PQ KEMs exist (§10).
+
+\textbf{W7 --- Condition-evaluation trust (Tier-2).} Tier-1 (on-chain,
+finalized) is deterministic. Tier-2 (oracle/API data) adds a data-source
+trust and a determinism risk; it stays opt-in and clearly labeled, with
+operators declaring supported tiers. Identity domain-separation (§5.3)
+must hold so that a partial for one condition cannot open another
+(grinding/replay).
+
+\textbf{W8 --- Open-request metadata channel (client → node).} Opening a
+Veil envelope POSTs the \emph{condition} (which embeds \texttt{beatId},
+the core address, and the chain id) to every node's \texttt{/partial}.
+Each node operator --- and any on-path observer --- therefore learns
+\emph{the link between a requester IP and a beatId of interest} and the
+\emph{timing} of the open attempt. The \texttt{beatId} and condition are
+already public on-chain; what is new is binding them to a requesting IP
+at open time. This is consistent with ``not metadata-private'' (§6.3),
+not a content leak (a tampered condition simply never releases ---
+fail-closed). Mitigations for the independent-operator federation:
+client egress over a privacy-preserving transport (e.g.~Tor or an
+oblivious relay) and TLS pinning / a known-key channel to deny passive
+collectors the linkage. With the all-ours testnet federation this is
+moot, but it must be addressed before independent operators run.
+
+\textbf{W9 --- Cross-sender identity collision.} The identity is
+\texttt{H("warden-cond-v1"\ ‖\ jcs(condition))} with nothing per-message
+mixed in, so two independent senders who encrypt to the \emph{same}
+condition share an identity and therefore share the released outer key
+\texttt{msk\ ·\ H1(identity)}. For Veil this is benign: every beat
+carries a unique \texttt{beatId} in the condition \texttt{args}, so
+identities never collide. But for the generalized conditions of §4.2
+(e.g.~a popular time-capsule date used verbatim by many senders), an
+identical condition couples all its users --- one requester's pull
+releases the outer key for every ciphertext under that condition.
+Content stays safe (the inner ECIES layer is per-recipient), but the
+\emph{timing gate} is shared. Mitigation: applications that reuse
+generic conditions should bind a per-message salt into the condition
+\texttt{meta} (a node still hashes and recomputes the identity
+deterministically), or otherwise engineer identity uniqueness as Veil
+does via \texttt{beatId}.
+
+\textbf{W10 --- Share-key registration / rogue-key.} Public
+verifiability (§5.5) rests on each node's published share-public-key.
+For the ``publicly provable misbehavior'' property to hold,
+share-public-keys MUST be bound to the DKG transcript (or, on testnet,
+the dealer's commitment) and registered with proof-of-possession;
+otherwise an operator publishing an adversarially-chosen
+share-public-key could undermine partial verification, as in classic BLS
+rogue-key attacks. This is a requirement on the setup ceremony, stated
+here so it is not assumed away. (The current trusted-dealer testnet
+build is not exposed to this: the dealer computes every share-public-key
+honestly by construction; the requirement bites once nodes self-publish
+keys under DKG.)
+
+\textbf{W11 --- Request-channel denial-of-service.} Each
+\texttt{/partial} request triggers a finalized chain read and a BLS
+signing operation, so an unauthenticated public endpoint is a
+compute/RPC amplification vector. This is an availability concern, not a
+confidentiality one (an unmet or malformed condition simply yields no
+release --- fail-closed). Mitigation: rate-limiting, lightweight request
+authentication, and caching of already-released partials at the public
+plane.
+
+\subsection{6.3 What Warden is not trying to
+be}\label{what-warden-is-not-trying-to-be}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Not trustless.} The trustless ideal is witness encryption (the
+  on-chain proof \emph{is} the key, no federation); it is not deployable
+  today. Warden is the best deployable approximation and is designed to
+  migrate to WE via the \texttt{alg} envelope when it ships.
+\item
+  \textbf{Not metadata-private.} Existence, timing, condition, and (for
+  Veil) \texttt{beatId}, recipient set, and the sender-recipient
+  relationship are public. Warden hides \emph{content until the
+  trigger}, never \emph{that something exists}.
+\end{itemize}
+
+\subsection{6.4 Honest claim language}\label{honest-claim-language}
+
+For any derived copy: one \emph{may} say \emph{time-bound, revocable,
+end-to-end-sealed delivery enforced by an independent threshold
+federation --- secure against early release unless \texttt{t} operators
+collude, and against denial as long as \texttt{t} stay honest and live
+--- with redundancy.} One \emph{must not} say \emph{absolute},
+\emph{mathematically guaranteed} (for timing/revocation),
+\emph{bulletproof}, \emph{absolute anonymity}, \emph{prevents bribery},
+\emph{cannot leak}, or \emph{honest-majority} (the bound is the
+threshold \texttt{t}, not a majority).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{7. Implementation}\label{implementation}
+
+Warden is implemented as a single \textbf{Rust core}
+(\texttt{warden-core}) --- chosen for memory safety, mature
+pairing-crypto crates, and the ability to drive one codebase to three
+client targets --- plus the surrounding daemon, dealer, CLI, and
+bindings. The reference implementation is complete and deployed on
+testnet (§8).
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Component
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Crate / artifact
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Role
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Crypto core & \texttt{warden-core} & Threshold BF-IBE encrypt/decrypt,
+threshold-BLS partial/combine, the \texttt{warden-v1} double-wrap
+envelope, the federation file format. On \texttt{arkworks} BLS12-381.
+Library only. \\
+Dealer & \texttt{warden-dealer} & Trusted-dealer ceremony CLI:
+materialize \texttt{msk}, Shamir-split, write \texttt{federation.json}
+(public) + per-node share files (secret, mode 0600). \textbf{Testnet
+only.} \\
+Node & \texttt{warden-node} (\texttt{wardend}) & Condition-watcher +
+\texttt{POST\ /partial} threshold release. Reads Base Sepolia at the
+\texttt{finalized} tag. The security-critical evaluator is
+\texttt{node/src/eval.rs}. \\
+Client CLI & \texttt{warden-cli} (\texttt{warden}) & \texttt{keygen} /
+\texttt{encrypt} (double-wrap → CID store) / \texttt{decrypt} (poll
+federation → combine → open, retry-until-released). \\
+WASM & \texttt{warden-wasm} & \texttt{wasm-bindgen} bindings over core
+for the TypeScript SDK: \texttt{condition\_identity} /
+\texttt{seal\_gated} / \texttt{open\_gated} / \texttt{combine}. \\
+Mobile FFI & \texttt{warden-ffi} & Thin C-ABI over core for the Flutter
+app via \texttt{dart:ffi}. Panics are caught at the boundary and
+returned as \texttt{\{ok:false,…\}} JSON rather than aborting the host
+app. Cross-compiles to an iOS xcframework and 4-ABI Android
+\texttt{jniLibs}. \\
+\end{longtable}
+
+A reproducible 3-node federation is provided via
+\texttt{docker-compose}. The cryptographic loop is verified by the
+crate's own offline integration tests and by a local devnet end-to-end
+harness, and the full loop has been run end-to-end on live Base Sepolia (§8).
+The same core, compiled to native, WASM, and mobile FFI, is what closes
+the multi-platform-client gap (notably Flutter mobile) that disqualified
+off-the-shelf alternatives. Both the specification and the
+implementation are public and MIT-licensed (see \emph{Artifact
+availability} below); the audit gate (§9, §10) governs operator
+recruitment and mainnet, not the openness of the source.
+
+The reuse/replace boundary is clean: the entire
+IBE/threshold-BLS/DKG/resharing/age-envelope stack is reused
+near-verbatim from the drand lineage, while the genuinely new
+engineering is the round-scheduler-to-Base-condition-watcher swap, the
+domain-separated \texttt{H(condition)} identity, the finality handling
+for the chain read, and the on-demand (vs.~periodic-firehose)
+condition-keyed release with an idempotent released-key store.
+
+\textbf{Artifact availability.} Warden is developed in the open as a
+standalone primitive at \textbf{https://github.com/bytesbrains/warden}
+(MIT), with an overview and operator information at
+\textbf{https://warden.bytesbrains.com}. The specification
+(\texttt{docs/}) is public; the implementation and reproducible
+federation are in the repository.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{8. Deployment Experience /
+Evaluation}\label{deployment-experience-evaluation}
+
+Warden is deployed as a \textbf{five-node federation on fly.io} and runs
+the full loop end-to-end against \textbf{Base Sepolia}, integrated with
+the live Maktub protocol and a mobile client (in testing): create a beat
+(with a check-in interval), seal a payload to the condition
+\texttt{getHeartbeat(beatId).word{[}7{]}\ ==\ true}, let the timer lapse
+so an executor flips the beat to executed, wait for the configured
+confirmation depth, collect partials from the federation, combine, and
+decrypt. In this configuration the system operates as expected. The
+complementary negative path --- \texttt{deactivate(beatId)} → the
+condition can never be satisfied → the payload is never released
+(permanent gibberish) --- also holds. A local Hardhat devnet harness
+(\texttt{evm\_increaseTime} to skip the timer) drives the same flow
+without funds and is the ``Warden works for all conditions'' gate.
+
+Crucially, this deployment exercises the \textbf{protocol, its
+integration, and liveness --- not the timing-security trust model.} All
+five nodes are operated by a single party (BytesBrains) on one provider
+(fly.io), i.e.~a single trust domain; per W4 (§6) that collapses to one
+party and has, by construction, no early-release resistance. The missing
+ingredient is \emph{independence} --- distinct organizations,
+jurisdictions, and infrastructure --- which is being actively recruited
+(§9). A revised version will add on-chain transaction evidence and a
+measurement pass.
+
+We characterize this as \textbf{deployment experience} rather than a
+full performance evaluation, which is appropriate (and, at
+applied/systems venues, acceptable) for a pre-audit testnet system. The
+compute profile is favorable by construction: a single threshold-BLS
+partial is microseconds of work per request, and per-node resource needs
+are modest (low single-digit vCPU, a few GB of RAM, tens of GB of disk
+for the share, config, released-partial cache, and logs, over commodity
+always-on infrastructure with a Base RPC). A rigorous measurement pass
+--- partial-release latency, combine latency, the finality-wait
+distribution, per-node footprint, and per-operator bandwidth --- is
+future work and is the natural content for a future revision.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{9. Federation Governance and
+Sustainability}\label{federation-governance-and-sustainability}
+
+Warden is intended to run as \textbf{token-free public-good
+infrastructure}, in the drand / League-of-Entropy tradition. Warden, and
+the Maktub protocol it serves, are public-good initiatives of
+BytesBrains Pte Ltd; Maktub is an open, unregistered on-chain protocol,
+and the operator \emph{federation} is an open collaboration of
+independent organizations rather than a single legal entity ---
+``foundation''/``federation'' here name that collaboration, not an
+incorporated body. That this is \emph{not} one entity is the point:
+independence across organizations is exactly the security property (§6,
+W4). The governance posture is deliberate and is itself a security
+property:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{No token; operators credited, not paid.} The absence of a
+  payment/staking economy keeps operators \emph{disinterested} ---
+  neutrality and the lack of a financial stake are exactly what make a
+  federation hard to bribe or capture, which is the property W1/W4
+  depend on.
+\item
+  \textbf{Institutional, not personal, commitment.} The real ask of an
+  operator is not hardware but \emph{reliability, key-share custody, and
+  longevity} --- running for years and participating in occasional
+  resharing ceremonies. This is why \textbf{institutions that persist}
+  (universities especially) are the ideal operators; the effort once set
+  up is a few hours per month of part-time sysadmin attention, with no
+  dedicated team and no special hardware.
+\item
+  \textbf{Independence is the security, not node count.} Even a small
+  federation of genuinely independent operators (different
+  organizations, jurisdictions, infrastructure) gives a meaningful
+  \texttt{t}-of-\texttt{n}; the goal is diversity and longevity, not a
+  data center. A federation that converges on one cloud account or one
+  RPC provider has the security of one party (W4).
+\item
+  \textbf{Funding line.} Audits, permanence, and continued development
+  are funded through a treasury and grants rather than protocol fees;
+  the honest status (testnet, pre-audit) is disclosed throughout. The
+  decade-scale funding question --- who pays for audits and continuity
+  across the full dormancy horizon --- is openly unresolved, and the
+  paper does not print durability claims it cannot back.
+\end{itemize}
+
+\textbf{Recruiting independence (an open invitation).} This independence
+is being actively pursued. The current five-node testnet runs within a
+single trust domain (BytesBrains, on one provider), and discussions are
+underway with universities and other long-lived institutions to take
+over genuinely independent shares. We extend this as an \textbf{open
+invitation}: any institution able to commit to reliability, key-share
+custody, and longevity is welcome to operate a founding node. That
+diversity --- distinct organizations, jurisdictions, and infrastructure
+--- not node count, is what gives Warden its timing-security (§6, W4),
+and turning this paper into that invitation is a deliberate part of why
+it is published (§11).
+
+The federation's behavior has \textbf{no governance surface over its own
+cryptography}: membership churns via resharing, but the master public
+key, and hence the decryptability of every dormant ciphertext, is
+outside anyone's power to change. This mirrors the immutability
+invariant of the Maktub protocol layer it serves.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{10. Limitations and Future
+Work}\label{limitations-and-future-work}
+
+The weaknesses of §6 are the honest limitation set; the forward path
+addresses them through the \texttt{alg}-versioned envelope, which lets
+the cryptography migrate with \textbf{no change to recipients or to
+Maktub} and with old envelopes decryptable forever.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Gen-2 --- signature-based witness encryption (SWE).} The ``no
+  master secret'' property is longevity-optimal for a dead-man's-switch
+  (it dissolves W5 and reshapes W1). Adopt when SWE has audited,
+  production-grade, cost-acceptable implementations with
+  mobile-acceptable ciphertext size.
+\item
+  \textbf{Layer --- threshold traitor-tracing.} Make a colluding
+  committee publicly attributable, closing the \emph{detectability} half
+  of W1, when production-ready code exists. This is a layer over the
+  base scheme, adoptable independently of gen-1/gen-2.
+\item
+  \textbf{Gen-3 --- witness encryption from SNARKs.} The trustless
+  endgame: the on-chain proof \emph{is} the key, no federation. Tracked
+  semi-annually as it matures from theory.
+\item
+  \textbf{Post-quantum migration.} No deployable PQ threshold-IBE
+  exists; harden the \emph{inner} recipient layer first (deployable PQ
+  KEMs exist) and track the threshold layer. Keeping
+  \texttt{alg}-versioning a hard requirement is the standing mitigation
+  for W6.
+\item
+  \textbf{Tier-2 conditions.} Oracle/API-gated release, opt-in and
+  separately tiered, with the data-source trust made explicit (W7).
+\item
+  \textbf{Full performance evaluation} and the autonomous
+  (watch-and-sign) release mode for stronger liveness (§5.3, §8).
+\end{itemize}
+
+The architecture spike that chose gen-1 (DKG threshold-IBE) over the
+silent-setup and SWE challengers is re-run semi-annually, because the
+maturity of SWE and of WE-from-SNARKs is exactly what will flip the
+gen-2/gen-3 timing.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{11. Ethics and Responsible
+Disclosure}\label{ethics-and-responsible-disclosure}
+
+Warden is dual-use infrastructure, and we treat the ethics of that
+squarely.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{What it protects vs.~what it does not.} Warden protects
+  \emph{delivery} (a sealed message reaches its recipients once the
+  trigger fires) and \emph{content} (only the recipient can read it). It
+  does \textbf{not} protect \emph{metadata}: existence, timing, the
+  public condition, and the recipient/sender relationship are public
+  on-chain by design (§6.3). We disclose this prominently rather than
+  letting an ``encrypted, decentralized'' framing imply anonymity it
+  does not provide, because a user who \emph{believes} they are
+  invisible when they are not is harmed by our overclaim.
+\item
+  \textbf{No anonymity / press-freedom framing discipline.} The
+  press-freedom use case is framed strictly as \emph{work survival}
+  (``your work survives you'' --- accident, illness, inability to
+  deliver), never as a tool for adversarial-state anonymity, consistent
+  with the protocol's honesty guardrail.
+\item
+  \textbf{Pre-audit status.} The system is testnet and pre-audit; the
+  current five-node federation is a single trust domain and so has no
+  timing-security, and independent-operator commitments are being sought
+  but not yet bound (§9, §10). We frame this work as \emph{design +
+  threat model + early deployment} precisely so that publishing it
+  before the audit is responsible --- openness supports the audit gate
+  rather than substituting for it, and binding founding-operator
+  commitments wait on the audit.
+\item
+  \textbf{Why publishing gives nothing away.} Openness is part of
+  Warden's trust model (no serious operator runs a black box), the
+  codebase is MIT public-good, and the cryptographic substrate is
+  already public (drand). Publishing the design, threat model, and
+  deployment experience therefore costs no security; it \emph{is} the
+  federation-recruitment vehicle.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{12. Conclusion}\label{conclusion}
+
+Warden takes the deployed timelock idea --- a threshold-BLS federation
+that is, unknowingly, an IBE key generator --- and changes exactly one
+thing: the identity is the hash of a \emph{resettable on-chain
+condition} rather than a future round number, and release is gated on
+observing that condition true at finalized depth rather than on a clock.
+Around that one change it builds an honest systems story: a double-wrap
+envelope that confines the federation to timing and never to content;
+resharing that gives the master key permanence across decades of
+operator churn; a finality policy for the security-critical chain read
+that drand never needed; and a multi-platform implementation running
+end-to-end as a five-node testnet federation on Base Sepolia, integrated
+with the Maktub protocol (a single trust domain today; independent
+operators are being recruited). The cryptography is reused and audited;
+the contribution is the system, the resettable-condition threat model,
+and a limitation analysis (W1--W11) calibrated to claim exactly the two
+properties Warden keeps --- guaranteed-but-deferred delivery and content
+confidentiality --- and nothing more. The honest gap between this and
+the trustless ideal (witness encryption) is the roadmap, and the
+\texttt{alg}-versioned envelope is the bridge across it.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{\texorpdfstring{Appendix A --- Envelope byte-format
+(\texttt{warden-v1})}{Appendix A --- Envelope byte-format (warden-v1)}}\label{appendix-a-envelope-byte-format-warden-v1}
+
+The wire form as implemented (\texttt{core/src/envelope.rs}); blobs are
+hex of the compressed-canonical / \texttt{nonce\ ‖\ ct} bytes.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{\{}
+\NormalTok{  "alg": "warden{-}v1",}
+\NormalTok{  "network": "\textless{}warden federation / master{-}key id\textgreater{}",   // bound into both AEAD layers}
+\NormalTok{  "condition": \{                                       // PUBLIC; hashed into the IBE identity}
+\NormalTok{    "type": "contract",}
+\NormalTok{    "chain": 84532,                                    // Base Sepolia (testnet)}
+\NormalTok{    "address": "0x\textless{}MaktubCore\textgreater{}",}
+\NormalTok{    "fn": "getHeartbeat(uint256)",                     // no executed() getter…}
+\NormalTok{    "args": ["\textless{}beatId\textgreater{}"],}
+\NormalTok{    "word": 7,                                         // …executed is return field 7 (see §4.2)}
+\NormalTok{    "test": \{ "cmp": "==", "value": true \},}
+\NormalTok{    "meta": \{ "finality": 32, "tier": 1 \}}
+\NormalTok{  \},}
+\NormalTok{  "outer": \{                  // condition gate (hybrid IBE — see §4.1)}
+\NormalTok{    "ibe": "\textless{}hex\textgreater{}",           // IBE(obk, H(condition)) — the (U,V,W) ciphertext, canonical{-}serialized}
+\NormalTok{    "seal": "\textless{}hex\textgreater{}"           // nonce ‖ AEAD\_obk(K\_wrapped), K\_wrapped = ECIES(K, recipientPub)}
+\NormalTok{  \},}
+\NormalTok{  "inner": \{                  // content layer; recipient{-}only. Warden never touches this.}
+\NormalTok{    "ct": "\textless{}hex\textgreater{}"             // nonce ‖ AEAD\_K(pad(payload))}
+\NormalTok{  \}}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+The identity \texttt{H("warden-cond-v1"\ ‖\ jcs(condition))} is
+recomputable by any node from the public \texttt{condition}, so the
+envelope need not store it (\texttt{word} is omitted from the canonical
+form when 0). No recipient metadata is stored --- the recipient is
+implicit in who can ECIES-open \texttt{K\_wrapped}.
+
+\section{\texorpdfstring{Appendix B --- Condition schema
+(\texttt{cond-v1})}{Appendix B --- Condition schema (cond-v1)}}\label{appendix-b-condition-schema-cond-v1}
+
+One \texttt{type} per condition, plus a mandatory \texttt{meta}:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{contract} ---
+  \texttt{\{\ chain,\ address,\ fn,\ args,\ word?,\ test:\ \{cmp,\ value\},\ meta\ \}}
+\item
+  \texttt{block} ---
+  \texttt{\{\ chain,\ field:\ "number"\textbar{}"timestamp",\ cmp,\ value,\ meta\ \}}
+\item
+  \texttt{event} ---
+  \texttt{\{\ chain,\ address,\ sig,\ args,\ meta\ \}}
+\item
+  \texttt{all\ \textbar{}\ any\ \textbar{}\ not\ \textbar{}\ threshold}
+  ---
+  \texttt{\{\ of:\ {[}...sub-conditions{]},\ k\ (threshold\ only),\ meta\ \}}
+\end{itemize}
+
+Rules:
+\texttt{cmp\ ∈\ \{\ ==,\ !=,\ \textgreater{}=,\ \textless{}=,\ \textgreater{},\ \textless{}\ \}}
+(string); all \texttt{uint256} args/values are decimal strings (never
+JSON numbers); \texttt{word} (contract only, default 0, omitted when 0)
+selects the 32-byte ABI return word; serialization is RFC 8785 (JCS) ---
+a number-vs-string mismatch yields a different identity and silently
+breaks decryption. The three non-negotiable constraints are determinism
+(finalized reads only), monotonicity/latching (non-monotone predicates
+rejected unless anchored), and finality/reorg safety (§3.1, §4.4). For
+\texttt{threshold}/compound conditions spanning multiple chains,
+deterministic evaluation across heterogeneous finality semantics is
+under-specified in v1 and is deferred to future work.
+
+\section{Appendix C --- Parameter
+choices}\label{appendix-c-parameter-choices}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Threshold:} target \texttt{t\ ≈\ ⌈2n/3⌉} (BFT-style), minimum
+  \texttt{⌊n/2⌋+1}.
+\item
+  \textbf{Finality:} federation-wide floor (Base: prefer L1-finalized;
+  the current implementation reads the \texttt{finalized} tag);
+  \texttt{C.meta.finality} may raise it, never lower it.
+\item
+  \textbf{Curve / scheme:} BLS12-381, Boneh--Franklin IBE over threshold
+  BLS, RFC 9380 hash-to-curve, FO-CCA transform; AEAD =
+  ChaCha20-Poly1305; recipient layer = ECIES over secp256k1 with
+  HKDF/SEC1 shared-info.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{References}\label{references}
+
+\emph{(ePrint identifiers are given where applicable.)}
+
+\begin{itemize}
+\tightlist
+\item
+  D. Boneh, M. Franklin. \emph{Identity-Based Encryption from the Weil
+  Pairing.} CRYPTO 2001.
+\item
+  D. Boneh, B. Lynn, H. Shacham. \emph{Short Signatures from the Weil
+  Pairing.} ASIACRYPT 2001.
+\item
+  A. Boldyreva. \emph{Threshold Signatures, Multisignatures and Blind
+  Signatures Based on the Gap-Diffie-Hellman-Group Signature Scheme.}
+  PKC 2003.
+\item
+  A. Shamir. \emph{How to Share a Secret.} CACM 1979.
+\item
+  P. Feldman. \emph{A Practical Scheme for Non-interactive Verifiable
+  Secret Sharing.} FOCS 1987.
+\item
+  T. Pedersen. \emph{Non-Interactive and Information-Theoretic Secure
+  Verifiable Secret Sharing.} CRYPTO 1991.
+\item
+  R. Gennaro, S. Jarecki, H. Krawczyk, T. Rabin. \emph{Secure
+  Distributed Key Generation for Discrete-Log Based Cryptosystems.}
+  EUROCRYPT 1999.
+\item
+  E. Fujisaki, T. Okamoto. \emph{Secure Integration of Asymmetric and
+  Symmetric Encryption Schemes.} CRYPTO 1999.
+\item
+  N. Gailly, K. Melissaris, Y. Romailler. \emph{tlock: Practical
+  Timelock Encryption from Threshold BLS.} IACR ePrint 2023/189.
+\item
+  drand / League of Entropy. Project documentation and the drand v2.0
+  post-mortem (2025).
+\item
+  R. Rivest, A. Shamir, D. Wagner. \emph{Time-lock Puzzles and
+  Timed-release Crypto.} 1996.
+\item
+  B. Wesolowski. \emph{Efficient Verifiable Delay Functions.} EUROCRYPT
+  2019. / K. Pietrzak. \emph{Simple Verifiable Delay Functions.} ITCS
+  2019.
+\item
+  S. Garg, C. Gentry, A. Sahai, B. Waters. \emph{Witness Encryption and
+  its Applications.} STOC 2013.
+\item
+  McFly: \emph{Signature-Based Witness Encryption.} IACR ePrint
+  2022/433. / Compact SWE, ePrint 2024/1477. / eWEB (next-block SWE),
+  ePrint 2025/1064.
+\item
+  \emph{Threshold Encryption with Silent Setup.} IACR ePrint 2024/263.
+\item
+  \emph{Silent Threshold Traitor-Tracing (ST3).} IACR ePrint 2025/342;
+  ACM CCS 2025.
+\item
+  \emph{Witness Encryption from SNARKs / KZG.} IACR ePrint 2025/1364
+  (CRYPTO 2025).
+\item
+  Threshold Network. \emph{TACo --- Threshold Access Control:
+  conditional threshold decryption} (project documentation).
+\item
+  Shutter Network. \emph{Threshold encryption for front-running
+  protection} (project documentation).
+\item
+  E. Kokoris-Kogias, E. C. Alp, L. Gasser, P. Jovanovic, E. Syta, B.
+  Ford. \emph{Calypso: Private Data Management for Decentralized
+  Ledgers.} VLDB 2021.
+\item
+  M. Campanelli, B. David, H. Khoshakhlagh, A. Konring, J. B. Nielsen.
+  \emph{Encryption to the Future: A Paradigm for Sending Secret Messages
+  to Future (Anonymous) Committees.} ASIACRYPT 2022.
+\item
+  RFC 9380 --- \emph{Hashing to Elliptic Curves.} / RFC 8785 ---
+  \emph{JSON Canonicalization Scheme (JCS).} / RFC 8439 ---
+  \emph{ChaCha20-Poly1305.} / RFC 5869 --- \emph{HKDF.}
+\item
+  F. Valsorda et al.~\emph{The age file-encryption format}, v1
+  (\texttt{age-encryption.org/v1}; C2SP specification).
+\item
+  Certicom Research. \emph{SEC 1: Elliptic Curve Cryptography, Version
+  2.0} (SECG, 2009) --- ECIES and EC primitives.
+\item
+  Warden project: source repository ---
+  https://github.com/bytesbrains/warden (MIT); overview / operator
+  information --- https://warden.bytesbrains.com; specification
+  (\texttt{docs/}) ---
+  https://github.com/bytesbrains/warden/tree/main/docs.
+\end{itemize}
+
+\end{document}
